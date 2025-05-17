@@ -5,6 +5,8 @@ import CompetitorPanel from './components/CompetitorPanel';
 import AIExplanationModal from './components/AIExplanationModal';
 import ExportButton from './components/ExportButton';
 import Dashboard from './components/Dashboard';
+import LoginPage from './components/LoginPage';
+import LogoutPage from './components/LogoutPage';
 import { calculateSuitability, toHeatmapPoints } from './modules/SuitabilityModule';
 
 // --- Mock Data for Demo ---
@@ -35,6 +37,8 @@ function App() {
   const [competitors, setCompetitors] = useState([]);
   const [locations] = useState(mockLocations);
   const [topLocationAddresses, setTopLocationAddresses] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Fetch user location
   useEffect(() => {
@@ -180,9 +184,24 @@ function App() {
     'Average Score': avgScore.toFixed(2),
   };
 
+  if (!isLoggedIn) {
+    if (isLoggingOut) {
+      return <LogoutPage onLoginAgain={() => { setIsLoggingOut(false); setIsLoggedIn(false); }} />;
+    }
+    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+  }
+
   // --- Layout ---
   return (
     <div className="relative w-screen h-screen overflow-hidden">
+      {/* Logout Button */}
+      <button
+        onClick={() => { setIsLoggedIn(false); setIsLoggingOut(true); }}
+        className="absolute top-4 right-4 z-50 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 font-semibold text-sm"
+        style={{ minWidth: 90 }}
+      >
+        Log Out
+      </button>
       {/* Map fills the background */}
       <div className="absolute inset-0 z-0">
         <Heatmap
