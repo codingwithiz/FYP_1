@@ -2,13 +2,21 @@ import React, { useState, useEffect } from 'react';
 import '@esri/calcite-components/dist/calcite/calcite.css';
 import { defineCustomElements } from '@esri/calcite-components/dist/loader';
 
-const PlacesPanel = ({ places = [], onPlaceSelect, onCategoryChange }) => {
+const PlacesPanel = ({ places = [], selectedPlace, onPlaceSelect, onCategoryChange }) => {
   const [activeCategory, setActiveCategory] = useState("4d4b7105d754a06377d81259");
+  const [showDetails, setShowDetails] = useState(false);
 
   // Initialize Calcite components
   useEffect(() => {
     defineCustomElements(window);
   }, []);
+
+  // Show details panel when a place is selected
+  useEffect(() => {
+    if (selectedPlace) {
+      setShowDetails(true);
+    }
+  }, [selectedPlace]);
 
   const handleCategoryChange = (event) => {
     if (event && event.target) {
@@ -18,10 +26,18 @@ const PlacesPanel = ({ places = [], onPlaceSelect, onCategoryChange }) => {
     }
   };
 
+  const handlePlaceClick = (place) => {
+    onPlaceSelect && onPlaceSelect(place);
+  };
+
+  const handleBackClick = () => {
+    setShowDetails(false);
+  };
+
   return (
     <div className="places-panel">
       <calcite-flow>
-        <calcite-flow-item heading="Places Nearby">
+        <calcite-flow-item heading="Places Nearby" hidden={showDetails}>
           <calcite-combobox
             id="categorySelect"
             placeholder="Filter by category"
@@ -46,7 +62,7 @@ const PlacesPanel = ({ places = [], onPlaceSelect, onCategoryChange }) => {
                   key={place.placeId || place.id}
                   label={place.name}
                   description={`${place.categories && place.categories[0] ? place.categories[0].label : 'No category'} - ${Number((place.distance / 1000).toFixed(1))} km`}
-                  onClick={() => onPlaceSelect && onPlaceSelect(place)}
+                  onClick={() => handlePlaceClick(place)}
                 ></calcite-list-item>
               ))
             ) : (
@@ -56,6 +72,57 @@ const PlacesPanel = ({ places = [], onPlaceSelect, onCategoryChange }) => {
             )}
           </calcite-list>
         </calcite-flow-item>
+
+        {selectedPlace && (
+          <calcite-flow-item 
+            heading={selectedPlace.name} 
+            description={selectedPlace.categories && selectedPlace.categories[0] ? selectedPlace.categories[0].label : ''} 
+            hidden={!showDetails}
+            onCalciteFlowItemBack={handleBackClick}
+          >
+            {selectedPlace.address && selectedPlace.address.streetAddress && (
+              <calcite-block heading="Address" open>
+                <calcite-icon slot="icon" icon="map-pin"></calcite-icon>
+                <div>{selectedPlace.address.streetAddress}</div>
+              </calcite-block>
+            )}
+            
+            {selectedPlace.contactInfo && selectedPlace.contactInfo.telephone && (
+              <calcite-block heading="Phone" open>
+                <calcite-icon slot="icon" icon="mobile"></calcite-icon>
+                <div>{selectedPlace.contactInfo.telephone}</div>
+              </calcite-block>
+            )}
+            
+            {selectedPlace.contactInfo && selectedPlace.contactInfo.email && (
+              <calcite-block heading="Email" open>
+                <calcite-icon slot="icon" icon="email-address"></calcite-icon>
+                <div>{selectedPlace.contactInfo.email}</div>
+              </calcite-block>
+            )}
+            
+            {selectedPlace.socialMedia && selectedPlace.socialMedia.facebookId && (
+              <calcite-block heading="Facebook" open>
+                <calcite-icon slot="icon" icon="speech-bubble-social"></calcite-icon>
+                <div><a href={`https://www.facebook.com/${selectedPlace.socialMedia.facebookId}`} target="_blank" rel="noopener noreferrer">View on Facebook</a></div>
+              </calcite-block>
+            )}
+            
+            {selectedPlace.socialMedia && selectedPlace.socialMedia.twitter && (
+              <calcite-block heading="X (Twitter)" open>
+                <calcite-icon slot="icon" icon="speech-bubbles"></calcite-icon>
+                <div><a href={`https://www.x.com/${selectedPlace.socialMedia.twitter}`} target="_blank" rel="noopener noreferrer">View on X</a></div>
+              </calcite-block>
+            )}
+            
+            {selectedPlace.socialMedia && selectedPlace.socialMedia.instagram && (
+              <calcite-block heading="Instagram" open>
+                <calcite-icon slot="icon" icon="camera"></calcite-icon>
+                <div><a href={`https://www.instagram.com/${selectedPlace.socialMedia.instagram}`} target="_blank" rel="noopener noreferrer">View on Instagram</a></div>
+              </calcite-block>
+            )}
+          </calcite-flow-item>
+        )}
       </calcite-flow>
     </div>
   );
