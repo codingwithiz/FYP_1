@@ -1,0 +1,36 @@
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#viewDiv {
+  height: 100%;
+  width: 100%;
+}
+
+#categorySelect {
+  margin: 5px;
+}
+
+#contents {
+  --calcite-shell-panel-min-width: 340px;
+}
+
+.calcite-panel {
+  padding: 10px;
+}
+
+.calcite-flow {
+  margin-top: 10px;
+}
+
+.calcite-list-item {
+  cursor: pointer;
+}
+
+.calcite-notice {
+  margin-bottom: 10px;
+}

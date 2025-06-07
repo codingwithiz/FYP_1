@@ -1,0 +1,6 @@
+/node_modules/
+
+# comment this default out for demo hosting purposes
+# /public/build/
+
+.DS_Store

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+  <title>StreamLayer-Message Event</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/3.21/esri/css/esri.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <script src="https://js.arcgis.com/3.21/"></script>
+  <script src="js/message-event.js"></script>
+</head>
+<body>
+<div class="banner padded-container">
+  Stream Layer: Message Event
+</div>
+<div id="mapDiv" class="map-small"></div>
+<div class="layer-controls">
+  <div class="label1">Stream Service Url. Click button to add/remove layer</div>
+  <input type="text" id="txtUrl" class="url disconnected">
+  <button id="toggle-layer-button">Add Stream Layer</button>
+</div>
+
+<div class="message-label1">Currently Displayed Flight Counts</div>
+<div class="bottom-container">
+  <div class="message-container">
+    <div class="message-label2">Total Flights</div>
+    <div class="message-label3" id="total">0</div>
+  </div>
+  <div class="message-container">
+    <div class="message-label2">Flights lower than 18000 feet</div>
+    <div class="message-label3" id="lt18000">0</div>
+  </div>
+  <div class="message-container">
+    <div class="message-label2">Flights higher than 18000 feet</div>
+    <div class="message-label3" id="gt18000">0</div>
+  </div>
+</div>
+
+</body>
+</html>

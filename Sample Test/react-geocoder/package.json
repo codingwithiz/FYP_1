@@ -1,0 +1,31 @@
+{
+  "name": "react-geocoder",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/core": "^10.0.6",
+    "@emotion/styled": "^10.0.6",
+    "@esri/arcgis-rest-auth": "^3.0.0",
+    "@esri/arcgis-rest-geocoding": "^3.0.0",
+    "@esri/arcgis-rest-request": "^3.0.0",
+    "downshift": "^5.1.0",
+    "emotion": "^10.0.6",
+    "lodash.debounce": "^4.0.8",
+    "match-sorter": "^4.1.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "^3.4.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

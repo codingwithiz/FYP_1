@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+  <title>StreamLayer-Filtering-3</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/3.21/esri/css/esri.css">
+  <link rel="stylesheet" href="css/main.css">
+
+  <script src="https://js.arcgis.com/3.21/"></script>
+  <script src="js/filtering.js"></script>
+</head>
+<body>
+  <div class="banner">
+    Stream Layer: Filtering
+  </div>
+  <div id="mapDiv"></div>
+  <div class="layer-controls">
+    <div class="label1">Stream Service Url. Click button to add/remove layer</div>
+    <input type="text" id="txtUrl" class="url disconnected">
+    <button id="toggle-layer-button">Add Stream Layer</button>
+  </div>
+  <div class="bottom-container">
+    <div class="control spatial-filter">
+      <div class="label2">Draw extent to filter messages by a bounding box</div><br>
+      <input type="button" id="cmdToggleSpatialFilter" value="Draw Extent" disabled="disabled" /><br>
+    </div>
+    <div class="control spatial-filter">
+      <div class="label2">Enter Where Clause</div>
+      <p>
+        <input type="text" id="txtWhere" value="AltitudeFeet < 30000">
+      </p>
+      <input type="button" id="cmdToggleWhereFilter" value="Apply Where" disabled="disabled" />
+
+    </div>
+  </div>
+
+</body>
+</html>

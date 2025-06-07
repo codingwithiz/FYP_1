@@ -1,0 +1,28 @@
+.view {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 1rem;
+  height: calc(100vh - 2rem);
+  padding: 1rem;
+}
+
+.collection {
+  overflow: scroll;
+  height: 100%;
+  border: 1px solid black;
+}
+
+.data {
+  overflow: scroll;
+  height: 100%;
+  border: 1px solid black;
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+}
+
+.placeholder {
+  margin: 1rem;
+}

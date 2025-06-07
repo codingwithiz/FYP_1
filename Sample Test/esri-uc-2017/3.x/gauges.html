@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>StreamLayer-Static Geometry Use Case</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.21/esri/css/esri.css">
+    <link rel="stylesheet" href="css/main.css">
+
+    <script src="https://js.arcgis.com/3.21/"></script>
+    <script src="js/gauges.js"></script>
+  </head>
+  <body>
+    <div class="banner padded-container">
+      Stream Layer: Static Observation Points with Updating Attributes
+    </div>
+    <div id="mapDiv"></div>
+    <div>
+      <div class="label1">Stream Service Url. Click button to add/remove layer</div>
+      <div class="bottom-container">
+        <input type="text" id="txtWsUrl" class="disconnected url" />
+        <input type="button" id="cmdToggleStream" value="Start Stream" />
+      </div>
+    </div>
+  </body>
+</html>

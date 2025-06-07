@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Working with Location Services with ArcGIS REST JS</title>
+
+	<link rel="stylesheet" href="dist/reset.css">
+	<link rel="stylesheet" href="dist/reveal.css">
+	<link rel="stylesheet" href="dist/theme/dev-summit-2021.css" id="theme">
+
+	<!-- Theme used for syntax highlighted code -->
+	<link rel="stylesheet" href="plugin/highlight/monokai.css" id="highlight-theme">
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section data-background="img/2021/dev-summit/bg-1.png" data-background-size="cover">
+				<h1 style="text-align: left; font-size: 70px;">
+					Working with Location Services with ArcGIS REST JS
+				</h1>
+				<p style="text-align: left; font-size: 30px;">
+					A. Davis, Noah Mulfinger, Gavin Rehkemper, Jacob Wasilkowski
+				</p>
+				<p style="text-align: left; font-size: 30px;">
+					<a href="https://github.com/araedavis">@araedavis</a>,
+					<a href="https://github.com/noahmulfinger">@noahmulfinger</a>,
+					<a href="https://github.com/gavinr">@gavinr</a>,
+					<a href="https://github.com/jwasilgeo">@jwasilgeo</a>
+				</p>
+				<p style="text-align: left; font-size: 30px;">
+					Slides: <a href="https://esriurl.com/ds21rest"><code>esriurl.com/ds21rest</code></a>
+				</p>
+			</section>
+
+			<!-- BEGIN INTRO SECTION -->
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					### What's REST JS? 
+
+					* Access ArcGIS location services, ArcGIS Online and ArcGIS Enterprise REST APIs
+
+					* Docs at [developers.arcgis.com/arcgis-rest-js](https://developers.arcgis.com/arcgis-rest-js/)
+
+					* REST JS is [open source](https://esri.github.io/arcgis-rest-js/)! 
+				</textarea>
+
+				<aside class="notes">
+					* a lightweight, modular library
+					* modern browsers and node.js
+					* framework-agnostic
+					* What it's not - no mapping or client-side visualization tools (use the JS API)
+					* in this talk, concentrating just on location services - for more on managing organizations, users, groups and content, check out the DevSummit session "Rest JS: Working with Users, Groups, Items, and Features"
+				</aside>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					### Before we begin: API Keys 
+
+					<image src="img/dashboard.png" alt="Dashboard screenshot" width="500"></image>
+					* [How to get an API Key](https://developers.arcgis.com/arcgis-rest-js/#get-started)
+					* [Learn more about API Keys](https://developers.arcgis.com/documentation/security-and-authentication/api-keys/)
+				</textarea>
+
+				<aside class="notes">
+					- a unique key to authenticate a developer to the ArcGIS Platform
+					- used for accessing specific location service
+					- To get a key - log in to your ArcGIS account or sign up for a developer account, go to your dashboard. 
+					- you can use API keys or ArcGIS identity (OAuth 2.0) with rest-js. Check out the security and authentication guide on the developers' website or the DevSummit talk 'Authentication in ArcGIS`
+        </aside>
+			</section>
+
+			<!-- BEGIN GEOCODING SECTION -->
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-5.png">
+				<textarea data-template>
+					## Geocoding
+
+					<image src="img/geocoding.png" alt="Geocoding place search example" width="700"></image>
+
+					[esri.github.io/arcgis-rest-js/api/geocoding](https://esri.github.io/arcgis-rest-js/api/geocoding/)
+				</textarea>
+
+				<aside class="notes">
+					- Geocoding aka address search
+					- process of converting text for an address or landmark to a complete address with a precise location
+					- You can use geocoding to find the location of an address, convert address text to a complete address, provide a list of suggestions for an incomplete address 
+					- Place search aka point of interest or POI search - searching for businesses, administrative boundaries, geographic features.
+					- Place search can also locate places by category such as restaurants, coffee shops, schools
+        </aside>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## Geocoding
+
+					* [geocode](https://esri.github.io/arcgis-rest-js/api/geocoding/geocode/)
+					* [suggest](https://esri.github.io/arcgis-rest-js/api/geocoding/suggest/)
+					* [bulk geocode](https://esri.github.io/arcgis-rest-js/api/geocoding/bulkGeocode/)
+					* [reverse geocode](https://esri.github.io/arcgis-rest-js/api/geocoding/reverseGeocode/)
+
+					[Learn more about the geocoding service](https://developers.arcgis.com/documentation/mapping-apis-and-location-services/geocode-and-search/)
+
+				</textarea>
+				<aside class="notes">
+					- here are the main rest-js helpers from the geocoding package. these wrap the geocoding service itself.
+					- geocode is used for geocoding and place search
+					- suggest is used to fetch placename suggestions for a partial string
+					- bulk geocoding is used to geocode multiple addresses at once
+					- reverse geocoding determines the address of a supplied location
+				</aside>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					### Find an address
+
+					<image src="img/geocoding-snippet-1.png" alt="Geocoding place search example" width="700"></image>
+
+					* [IGeocodeOptions](https://esri.github.io/arcgis-rest-js/api/geocoding/IGeocodeOptions/)
+					* [Full tutorial and code](https://developers.arcgis.com/arcgis-rest-js/geocode-and-search/search-for-an-address/)
+				</textarea>
+				<aside class="notes">
+					- import the geocode method (or use the CDN url)
+					- set up API Key
+					- Set up the params to be passed along to geocode. Bc rest-js is written in typescript, we have handy interfaces that allow us to see the shape of our options option and the response
+				</aside>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					### Place search 
+
+					<image src="img/geocoding-snippet-2.png" alt="Geocoding place search example" width="700"></image>
+
+					* [Full tutorial and code](https://developers.arcgis.com/arcgis-rest-js/geocode-and-search/find-places/)
+					* [Learn more about place search](https://developers.arcgis.com/documentation/mapping-apis-and-location-services/geocode-and-search/place-search/)
+				</textarea>
+				<aside class="notes">
+					- geocode is powerful. in addition to address data, we can also pass along additional info in the params object, which allow us to search for types of locations, a location to focus our search, define a search radius, etc. 
+				</aside>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-5.png">
+				<textarea data-template>
+					## Geocoding
+
+					[Demo](https://github.com/araedavis/react-geocoder)
+
+					* REST JS: request, auth, geocoding packages
+					* React
+					* [Downshift](https://github.com/downshift-js/downshift)
+
+				</textarea>
+				<aside class="notes">
+					- Demo - React component originally created by a user.
+					- text input with auto complete that suggests locations
+					- Downshift is a library that simplifies building accessible dropdowns, inputs, etc in React
+					(demo component)
+					- note score in response: API provides a quality score to see how good the match is
+					What's going on in code: 
+					if menu is open, suggest component calls a useEffect every time the address string changes
+					- Debounce prevents an API call with every single keystroke and improves performances 
+					- rest-js suggest method: point out params, how api key is passed 
+
+					- in addition to the text result, suggest provides a magicKey string - links a suggestion to an address or place. - magic Keys are not permanent across versions of the World Geocoding search and thus shouldn't be stored by a client application, but instead only used as a parameter for the geocode call.  
+	
+					- Downshift handles onChange behavior. When user selects a result, we pass magicKey to rest-js geocode function along with our maxLocations and api key. 
+
+				</aside>
+			</section>
+
+			<!-- BEGIN ROUTING SECTION -->
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## Routing
+
+					![Routing example map](img/routing.png)
+					
+					[esri.github.io/arcgis-rest-js/api/routing](https://esri.github.io/arcgis-rest-js/api/routing/)
+				</textarea>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## Routing
+
+					* Basic: Solve Route
+					* Others:
+						* Closest Facility
+						* Service Area
+						* Travel Cost Matrix
+					
+				</textarea>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## Routing: Solve Route
+
+					```js
+					const authentication = new ApiKey({
+						key: apiKey // from https://developers.arcgis.com
+					});
+
+					solveRoute({
+						stops: [
+							[-117.195677, 34.056383],
+							[-117.918976, 33.812092]
+						],
+						authentication
+					}).then((response) => {
+						console.log(response);
+					});
+					```
+					[Live Demo](https://codepen.io/gavinr/pen/OJbRwod?editors=0010)
+				</textarea>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					### Routing: With Leaflet
+					![Routing with Leaflet - screenshot](img/routing-with-leaflet.png)
+					[Live Demo](https://codepen.io/gavinr/pen/jOVMvGV?editors=1000)
+					
+					
+				</textarea>
+			</section>
+
+
+			<!-- BEGIN LAYERS SECTION -->
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-4.png">
+				<textarea data-template>
+					## Feature Layers
+
+					<div style="display: flex; flex-direction: row; justify-content: space-evenly; align-items: center;">
+						<img src="img/arcgis-rest-js-fl-module.png" height="400" alt="ArcGIS Rest JS Feature Layer module">
+						<div style="width: 50%; text-align: left;">
+							<p>Functions for</p>
+							<ul>
+								<li>querying features</li>
+								<li>editing features</li>
+							</ul>
+							<p>... in hosted feature layers</p>
+						</div>
+					</div>
+
+					[esri.github.io/arcgis-rest-js/api/feature-layer/](https://esri.github.io/arcgis-rest-js/api/feature-layer/)
+				</textarea>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## Feature Layers
+
+					Usage examples 💡
+
+					* Not using any JS maps
+
+						* Website user forms 📃, non-spatial charts 📊
+
+					* Extending JS map libraries 🗺️
+
+					* Nightly feature data updates with Node.js
+				</textarea>
+			</section>
+
+			<section data-background="img/2021/dev-summit/bg-2.png">
+				<h2>Query a feature layer</h2>
+
+				<pre><code class="hljs" data-trim data-line-numbers>
+					import {
+					  queryFeatures
+					} from "@esri/arcgis-rest-feature-layer";
+
+					queryFeatures({
+					  url: "https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/LA_County_Parcels/FeatureServer/0",
+					  where: "UseType = 'Residential'"
+					}).then((response) => {
+					  console.log(response.features);
+					});
+				</code></pre>
+
+				<a href="https://developers.arcgis.com/arcgis-rest-js/layers/query-a-feature-layer-sql/">https://developers.arcgis.com/arcgis-rest-js/layers/query-a-feature-layer-sql/</a>
+			</section>
+
+			<section data-background="img/2021/dev-summit/bg-2.png">
+				<h2>Edit feature data</h2>
+
+				<pre><code class="hljs" data-trim data-line-numbers>
+					import {
+					  addFeatures,
+					  updateFeatures,
+					  deleteFeatures
+					} from "@esri/arcgis-rest-feature-layer";
+
+					addFeatures({
+					  url: featureServiceLayerUrl,
+					  features: [featureToAdd]
+					}).then((response) => console.log(response));
+
+					// similarly:
+					// updateFeatures()
+					// deleteFeatures()
+				</code></pre>
+
+				<a href="https://developers.arcgis.com/arcgis-rest-js/layers/edit-feature-data/">https://developers.arcgis.com/arcgis-rest-js/layers/edit-feature-data/</a>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## [Svelte app](https://svelte.dev/) &amp; editing feature data
+
+					<img src="img/svelte-logo.png" height="110" alt="Svelte and the Feature Layer module" style="margin-bottom: 75px; margin-right: 65px;">
+
+					<img src="img/svelte-and-arcgis-rest-js-fl-module.png" height="225" alt="Svelte and the Feature Layer module">
+
+					[Live Demo](https://jwasilgeo.github.io/ds2021-working-with-location-services-with-arcgis-rest-js/layers-section/svelte-app/public/)
+				</textarea>
+			</section>
+
+			<!-- BEGIN DEMOGRAPHICS SECTION -->
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-4.png">
+				<textarea data-template>
+					## Demographics
+
+					<img src="img/demographics-image.png" height="300" alt="Demographic map">
+				
+					[esri.github.io/arcgis-rest-js/api/demographics/](https://esri.github.io/arcgis-rest-js/api/demographics/)
+				</textarea>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-4.png">
+				<textarea data-template>
+					### New demographics package
+
+					* querying demographic data
+
+					* finding available datasets
+
+					* finding regional boundaries
+					 
+					* typed API responses
+				
+				</textarea>
+			</section>
+			
+			<section data-background="img/2021/dev-summit/bg-2.png">
+				<h3>Querying data</h3>
+			
+				<pre>
+					<code class="hljs" data-trim data-line-numbers>
+					import {
+					  queryDemographicData
+					} from "@esri/arcgis-rest-demographics";
+				
+					queryDemographicData({
+					  studyAreas: [{
+					    geometry: { x: 0.1278, y: 51.5074 } // Long/Lat
+					  }], 
+					  authentication: authentication
+					}).then(response => {
+					  // Demographic data for 1 mile radius around point
+					  console.log(response);
+					});
+					</code>
+				</pre>
+			
+				<a href="https://developers.arcgis.com/arcgis-rest-js/demographic-data/query-demographic-data/">https://developers.arcgis.com/arcgis-rest-js/demographic-data/query-demographic-data/</a>
+			</section>
+
+			<section data-background="img/2021/dev-summit/bg-2.png">
+				<h3>Using an API Key</h3>
+			
+				<img src="img/demographics-scope.png" alt="Demographics scope added to an API key">
+			
+			</section>
+			
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					### React & ArcGIS JS API app
+				
+					<div style="display: flex; flex-direction: row; justify-content: center; gap: 50px;">
+						<div style="display: flex; flex-direction: column; margin-right: 20px; align-items: center; justify-content: center;">
+							<img src="img/react-logo.png" height="100" alt="React logo">
+							<img src="img/esri-logo.png" height="100" alt="Esri logo">
+						</div>
+						<img src="img/demographics-demo.png" height="400" width="700" alt="Image of demographics demo">
+					</div>
+				
+					[Demo](https://github.com/jwasilgeo/ds2021-working-with-location-services-with-arcgis-rest-js/tree/main/demographics-section/react-app)
+			  </textarea>
+			</section>
+
+			<section data-markdown data-background="img/2021/dev-summit/bg-2.png">
+				<textarea data-template>
+					## Resources
+				
+					* Guide: https://developers.arcgis.com/arcgis-rest-js/
+					* API Reference: https://esri.github.io/arcgis-rest-js/api/
+					* Developer dashboard: https://developers.arcgis.com/dashboard/
+					* Presentation source: https://github.com/jwasilgeo/ds2021-working-with-location-services-with-arcgis-rest-js
+					* Slides: https://esriurl.com/ds21rest
+				
+			  </textarea>
+			</section>
+
+			<!-- ESRI LOGO SLIDE: -->
+			<section data-background="img/2021/dev-summit/bg-5.png">
+				<img src="img/esri-science-logo-white.png" />
+			</section>
+
+			<!-- Survey Slide-->
+			<section data-markdown data-background="img/2021/dev-summit/bg-5.png">
+				<textarea data-template>
+					Please provide your feedback for this session by clicking on the session survey link directly below the video.
+				</textarea>
+			</section>
+		</div>
+	</div>
+
+	<script src="dist/reveal.js"></script>
+	<script src="plugin/notes/notes.js"></script>
+	<script src="plugin/markdown/markdown.js"></script>
+	<script src="plugin/highlight/highlight.js"></script>
+	<script>
+		// More info about initialization & config:
+		// - https://revealjs.com/initialization/
+		// - https://revealjs.com/config/
+		Reveal.initialize({
+			hash: true,
+
+			// Learn about plugins: https://revealjs.com/plugins/
+			plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+		});
+	</script>
+</body>
+
+</html>
