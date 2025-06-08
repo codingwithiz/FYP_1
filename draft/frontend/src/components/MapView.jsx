@@ -213,7 +213,7 @@ const MapViewComponent = ({
             });
 
             const results = await places.queryPlacesNearPoint(queryParams);
-
+            
             if (results.results && results.results.length > 0) {
                 results.results.forEach(addResult);
                 onPlacesFound && onPlacesFound(results.results);

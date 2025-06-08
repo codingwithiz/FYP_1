@@ -4,7 +4,8 @@ import Basemap from "./components/Esrimap";
 import PlacesPanel from "./components/PlacesPanel";
 import MapViewComponent from "./components/MapView";
 import "./App.css";
-
+import axios from "axios";
+import api from "./api/api";
 
 function App() {
     const [places, setPlaces] = useState([]);
@@ -16,10 +17,37 @@ function App() {
     const apiKey =
         "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
 
-    const handlePlacesFound = (results) => {
-        console.log("Places found:", results.length);
-        setPlaces(results);
-    };
+      const handlePlacesFound = async (results) => {
+          console.log("Places found:", results.length);
+          console.log("First Result Categories:", results[0]?.categories);
+          setPlaces(results);
+
+          // Construct simplified objects to send to backend
+          const simplifiedResults = results.map((place) => ({
+              name: place.name,
+              placeId: place.placeId,
+              distance: place.distance,
+              location: place.location,
+              icon: place.icon?.url || null,
+              categories: place.categories?.map((cat) => cat.label) || [],
+          }));
+
+          try {
+              const response = await api.post("/api/process-places", {
+                  places: simplifiedResults,
+              });
+
+              console.log(
+                  "Filtered + Processed Places:",
+                  response.data.processed
+              );
+              setPlaces(response.data.processed);
+          } catch (error) {
+              console.error("Error sending places to backend:", error);
+              setPlaces(results); // fallback to original if backend fails
+          }
+      };
+        
 
     const handleCategoryChange = (category) => {
         console.log("Category changed to:", category);
@@ -28,7 +56,7 @@ function App() {
 
     const handlePlaceSelect = (place) => {
         console.log("Selected place:", place);
-        setSelectedPlace(place);
+      setSelectedPlace(place);
     };
 
     return (

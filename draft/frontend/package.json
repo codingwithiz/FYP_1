@@ -12,6 +12,7 @@
   "dependencies": {
     "@arcgis/map-components": "^4.32.14",
     "@tailwindcss/vite": "^4.1.8",
+    "axios": "^1.9.0",
     "esri-loader": "^3.7.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
