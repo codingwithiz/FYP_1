@@ -37,6 +37,7 @@ const MapViewComponent = ({
                 "esri/layers/GraphicsLayer",
                 "esri/widgets/BasemapGallery",
                 "esri/widgets/Expand",
+                "esri/widgets/Search",
             ],
             { version: "4.32", css: true }
         )
@@ -53,6 +54,7 @@ const MapViewComponent = ({
                     GraphicsLayer,
                     BasemapGallery,
                     Expand,
+                    Search,
                 ]) => {
                     esriConfig.apiKey = apiKey;
 
@@ -67,6 +69,7 @@ const MapViewComponent = ({
                         GraphicsLayer,
                         BasemapGallery,
                         Expand,
+                        Search,
                         esriConfig,
                     });
 
@@ -119,6 +122,16 @@ const MapViewComponent = ({
                             if (newBasemap) {
                                 mapView.map.basemap = newBasemap;
                             }
+                        });
+
+                        const searchWidget = new Search({
+                            view: mapView,
+                            resultGraphicEnabled: true,
+                            popupEnabled: true,
+                        });
+                        mapView.ui.add(searchWidget, {
+                            position: "top-left",
+                            index: 0,
                         });
 
                         // Map click handler
@@ -322,7 +335,12 @@ const MapViewComponent = ({
         }
     }, [selectedPlaceId, view]);
 
-    return <div ref={mapRef} style={{ height: "100%", width: "100%" }} />;
+    return (
+        <>
+            
+            <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
+        </>
+    );
 };
 
 export default MapViewComponent;
