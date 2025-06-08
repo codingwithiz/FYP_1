@@ -177,7 +177,7 @@ const MapViewComponent = ({ activeCategory = "4d4b7105d754a06377d81259", onPlace
       console.log("Querying places with category:", activeCategory);
 
       const results = await places.queryPlacesNearPoint(placesQueryParameters);
-      console.log("Places results:", results);
+      console.log("Places results:", results.results);
       
       if (results.results && results.results.length > 0) {
         console.log(`Found ${results.results.length} places`);

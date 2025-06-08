@@ -32,15 +32,30 @@ const reducer = (state, action) => {
   }
 };
 
+function logToBackend(level, service, message) {
+    fetch("http://localhost:3001/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ level, service, message }),
+    }).catch(console.error); // Catch fetch errors
+}
+
+
 const authentication = new ApiKey({ key: API_KEY });
 
 export function geocodeResult(selectedItem) {
   const { magicKey } = selectedItem;
 
-  geocode({ magicKey, maxLocations: 1, authentication }).then((res) => {
-    console.log(res.candidates);
-    alert(res.candidates[0].address);
-  })
+  geocode({
+      magicKey,
+      maxLocations: 1,
+      countryCode: "MY",
+      authentication,
+  }).then((res) => {
+      const msg = JSON.stringify(res.candidates, null, 2);
+      logToBackend("info", "geocoding service", msg); // Logs to backend terminal
+      alert(res.candidates[0].address);
+  });
 }
 
 export function Suggest({ address, children }) {
