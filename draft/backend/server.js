@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+require("dotenv").config();
 const app = express();
 const PORT = 3001;
 
@@ -47,6 +48,8 @@ app.post("/analyze-location", async (req, res) => {
 
 const processPlacesRoute = require("./routes/processPlaces");
 app.post("/api/process-places", processPlacesRoute);
+
+app.post("/api/suitability", require("./routes/suitability"));
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
