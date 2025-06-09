@@ -1,18 +1,28 @@
 const haversine = require("haversine-distance");
 
-function scoreHospital(hospital, referencePoint) {
-    const dist = haversine(referencePoint, {
-        latitude: hospital.lat,
-        longitude: hospital.lon,
+/**
+ * Scores a place based on proximity to a reference point.
+ * Closer places get higher scores. Score is scaled to 0–100.
+ *
+ * @param {Object} place - The place object with location info.
+ * @param {Object} referencePoint - { latitude, longitude } of reference.
+ * @returns {number} Scaled proximity score (0–100).
+ */
+function scorePlaceByDistance(place, referencePoint) {
+    const distance = haversine(referencePoint, {
+        latitude: place.location.y,
+        longitude: place.location.x,
     });
 
-    const distanceScore = 1 / (dist + 1);
-    const ratingScore = hospital.rating ? hospital.rating / 5 : 0.5;
-    const capacityScore = hospital.attributes.capacity
-        ? hospital.attributes.capacity / 100
-        : 0.5;
+    const maxDistanceMeters = 1000; // 1 km
+    if (distance > maxDistanceMeters) return 0;
 
-    return distanceScore * 0.5 + ratingScore * 0.3 + capacityScore * 0.2;
+    // Invert and scale the distance to a 0–100 score
+    const proximity = 1 - distance / maxDistanceMeters;
+    console.log("Proximity: ", proximity); // e.g. 0.8 if 200m away
+    const scaledScore = parseFloat((proximity * 100).toFixed(2)); // e.g. 80.00
+
+    return scaledScore;
 }
 
-module.exports = { scoreHospital };
+module.exports = { scorePlaceByDistance };
