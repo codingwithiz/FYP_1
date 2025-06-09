@@ -20,6 +20,8 @@ function App() {
       const handlePlacesFound = async (results) => {
           console.log("Places found:", results.length);
           console.log("First Result Categories:", results[0]?.categories);
+          
+          // Set places immediately to show something while backend processes
           setPlaces(results);
 
           // Construct simplified objects to send to backend
@@ -41,10 +43,15 @@ function App() {
                   "Filtered + Processed Places:",
                   response.data.processed
               );
-              setPlaces(response.data.processed);
+              
+              // Only update places if backend returned non-empty results
+              if (response.data.processed && response.data.processed.length > 0) {
+                  setPlaces(response.data.processed);
+              }
+              // Otherwise, keep using the original results (already set above)
           } catch (error) {
               console.error("Error sending places to backend:", error);
-              setPlaces(results); // fallback to original if backend fails
+              // Original results already set above
           }
       };
         

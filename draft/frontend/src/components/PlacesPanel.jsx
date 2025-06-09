@@ -25,6 +25,16 @@ const PlacesPanel = ({
         }
     }, [selectedPlace]);
 
+    // Log places data for debugging
+    useEffect(() => {
+        console.log("Places received in panel:", places);
+        if (places.length === 0) {
+            console.log("No places to display");
+        } else {
+            console.log("First place category structure:", places[0].categories);
+        }
+    }, [places]);
+
     const handleCategoryChange = (event) => {
         if (event && event.target) {
             const selectedCategory = event.detail.value;
@@ -97,8 +107,12 @@ const PlacesPanel = ({
                                     key={place.placeId || place.id}
                                     label={place.name}
                                     description={`${
-                                        place.categories && place.categories[0]
-                                            ? place.categories[0].label
+                                        // Handle both array of strings and array of objects with label property
+                                        Array.isArray(place.categories)
+                                            ? typeof place.categories[0] ===
+                                                "string"
+                                                ? place.categories[0]
+                                                : place.categories[0]?.label
                                             : "No category"
                                     } - ${Number(
                                         (place.distance / 1000).toFixed(1)

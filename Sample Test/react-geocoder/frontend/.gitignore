@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/.pnp
+.pnp.js
 
 # testing
 /coverage
@@ -11,11 +13,47 @@
 
 # misc
 .DS_Store
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
+# logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+logs
+*.log
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.vs/
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Optional npm cache & eslint cache
+.npm
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
