@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import { loadModules } from "esri-loader";
-
+import Point from "@arcgis/core/geometry/Point.js";
 const MapViewComponent = ({
     activeCategory = "4d4b7105d754a06377d81259",
     onPlacesFound,
@@ -33,6 +33,7 @@ const MapViewComponent = ({
                 "esri/rest/support/FetchPlaceParameters",
                 "esri/rest/support/PlacesQueryParameters",
                 "esri/geometry/Circle",
+                "esri/geometry/Point",
                 "esri/Graphic",
                 "esri/layers/GraphicsLayer",
                 "esri/widgets/BasemapGallery",
@@ -50,6 +51,7 @@ const MapViewComponent = ({
                     FetchPlaceParameters,
                     PlacesQueryParameters,
                     Circle,
+                    Point,
                     Graphic,
                     GraphicsLayer,
                     BasemapGallery,
@@ -65,6 +67,7 @@ const MapViewComponent = ({
                         FetchPlaceParameters,
                         PlacesQueryParameters,
                         Circle,
+                        Point,
                         Graphic,
                         GraphicsLayer,
                         BasemapGallery,
@@ -136,6 +139,7 @@ const MapViewComponent = ({
 
                         // Map click handler
                         mapView.on("click", (event) => {
+                            console.log("event map point: ", event.mapPoint);
                             setLastClickPoint(event.mapPoint);
                             clearGraphics();
                             showPlaces(event.mapPoint);
@@ -168,7 +172,25 @@ const MapViewComponent = ({
         placesLayerRef.current.removeAll();
     };
 
+    const normalizeLongitude = (point) => {
+        if (!esriModules || !esriModules.Point) {
+            console.warn("esriModules.Point is not loaded yet");
+            return point;
+        }
+
+        const normalizedX =
+            ((((point.longitude + 180) % 360) + 360) % 360) - 180;
+
+        return new esriModules.Point({
+            latitude: point.latitude,
+            longitude: normalizedX,
+            spatialReference: point.spatialReference,
+        });
+    };
+
     const showPlaces = async (placePoint) => {
+        const normalizedPoint = normalizeLongitude(placePoint);
+        console.log("normalizedPoint: ", normalizedPoint);
         if (!esriModules || !bufferLayerRef.current || !placesLayerRef.current)
             return;
 
@@ -176,7 +198,7 @@ const MapViewComponent = ({
 
         try {
             const circleGeometry = new Circle({
-                center: placePoint,
+                center: normalizedPoint,
                 geodesic: true,
                 numberOfPoints: 100,
                 radius: 500,
@@ -196,7 +218,7 @@ const MapViewComponent = ({
             bufferLayerRef.current.add(circleGraphic);
 
             const pointGraphic = new Graphic({
-                geometry: placePoint,
+                geometry: normalizedPoint,
                 symbol: {
                     type: "simple-marker",
                     color: [255, 0, 0],
@@ -208,7 +230,7 @@ const MapViewComponent = ({
             const queryParams = new PlacesQueryParameters({
                 categoryIds: [activeCategory],
                 radius: 500,
-                point: placePoint,
+                point: normalizedPoint,
                 icon: "png",
             });
 
