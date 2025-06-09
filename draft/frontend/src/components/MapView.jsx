@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import { loadModules } from "esri-loader";
+import axios from "axios";
 import Point from "@arcgis/core/geometry/Point.js";
 const MapViewComponent = ({
     activeCategory = "4d4b7105d754a06377d81259",
@@ -339,6 +340,68 @@ const MapViewComponent = ({
         }
     };
 
+    const handleSuitabilityRequest = async () => {
+        try {
+            const response = await axios.post("http://localhost:3001/api/suitability", {
+                location: "Universiti Malaya", // or lastClickPoint if geocoded
+                category: "hospitals",
+                radius: 1000,
+            });
+
+            const data = response.data;
+            const results = data.recommended_locations;
+
+            addSuitabilityMarkers(results);
+        } catch (error) {
+            console.error("Suitability API call failed:", error);
+        }
+    };
+
+    const addSuitabilityMarkers = (locations) => {
+        if (!esriModules || !placesLayerRef.current) return;
+
+        const { Graphic, Point } = esriModules;
+        placesLayerRef.current.removeAll(); // Optional: Clear previous
+
+        locations.forEach(({ lat, lon, score }) => {
+            const point = new Point({ latitude: lat, longitude: lon });
+
+            const marker = new Graphic({
+                geometry: point,
+                symbol: {
+                    type: "simple-marker",
+                    style: "circle",
+                    color: [0, 255, 100, 0.8],
+                    size: 12,
+                    outline: {
+                        color: [0, 100, 50],
+                        width: 1,
+                    },
+                },
+                attributes: {
+                    score: score,
+                },
+                popupTemplate: {
+                    title: "Recommended Location",
+                    content: `Score: ${score}`,
+                },
+            });
+
+            placesLayerRef.current.add(marker);
+        });
+
+        if (locations.length > 0 && view) {
+            console.log("goTo locations: ", locations);
+            view.goTo({
+                target: locations.map(
+                    ({ lat, lon }) =>
+                        new Point({ latitude: lat, longitude: lon })
+                ),
+                zoom: 15,
+            });
+        }
+    };
+    
     useEffect(() => {
         if (selectedPlaceId && view && placesLayerRef.current) {
             const placeGraphic = placesLayerRef.current.graphics.find(
@@ -359,7 +422,12 @@ const MapViewComponent = ({
 
     return (
         <>
-            
+            <button
+                onClick={handleSuitabilityRequest}
+                style={{ position: "absolute", zIndex: 10 }}
+            >
+                Run Suitability Analysis
+            </button>
             <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
         </>
     );
