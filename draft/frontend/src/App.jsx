@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Basemap from "./components/Esrimap";
 import PlacesPanel from "./components/PlacesPanel";
 import MapViewComponent from "./components/MapView";
+import Chatbot from "./components/Chatbot";
 import "./App.css";
 import axios from "axios";
 import api from "./api/api";
@@ -59,6 +60,26 @@ function App() {
       setSelectedPlace(place);
     };
 
+    const handleChatbotResult = async ({ location, category, radius }) => {
+        console.log("Chatbot returned:", { location, category, radius });
+      
+        try {
+          const res = await api.post("/api/suitability", {
+            location,
+            category,
+            radius,
+          });
+      
+          const results = res.data.recommended_locations || [];
+          console.log("Recommended locations:", results);
+          setPlaces(results);
+        } catch (err) {
+          console.error("Error calling suitability API:", err);
+          alert("Could not fetch recommended locations.");
+        }
+      };
+      
+
     return (
         <Router>
             <nav style={{ padding: "1rem", backgroundColor: "#eee" }}>
@@ -86,6 +107,9 @@ function App() {
                                     borderRight: "1px solid #ccc",
                                 }}
                             >
+                                <Chatbot
+                                    onExtracted={handleChatbotResult}
+                                />
                                 <PlacesPanel
                                     places={places}
                                     selectedPlace={selectedPlace}

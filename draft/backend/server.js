@@ -112,3 +112,7 @@ function computeSuitabilityScore({ competition, demographics, accessibility }) {
         (1 - competition / 10) * 0.4 + demographics * 0.3 + accessibility * 0.3
     );
 }
+
+//chatbot
+const chatbotRoute = require("./routes/chatbot");
+app.use(chatbotRoute);
