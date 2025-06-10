@@ -23,7 +23,7 @@ exports.geocodeLocation = async (location) => {
             c.address.toLowerCase().includes(location.toLowerCase())
         );
         console.log("Matched location:", match ? match.address : "None");
-        return match ? match.location : candidates[0].location;
+        return match ? match : candidates[0].location;
     } catch (err) {
         console.error(
             "Error fetching geocode location:",

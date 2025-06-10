@@ -3,7 +3,7 @@ import "@esri/calcite-components/dist/calcite/calcite.css";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
 import { loadModules } from "esri-loader";
 import axios from "axios";
-import Point from "@arcgis/core/geometry/Point.js";
+
 const MapViewComponent = ({
     activeCategory = "4d4b7105d754a06377d81259",
     onPlacesFound,
@@ -352,9 +352,8 @@ const MapViewComponent = ({
                 }
             );
 
-            const data = response.data;
-            const results = data.recommended_locations;
-
+            const results = response.data;
+        
             addSuitabilityMarkers(results);
         } catch (error) {
             console.error("Suitability API call failed:", error);
@@ -367,7 +366,7 @@ const MapViewComponent = ({
         const { Graphic, Point } = esriModules;
         placesLayerRef.current.removeAll(); // Optional: Clear previous
 
-        locations.forEach(({ lat, lon, score }) => {
+        locations.recommended_locations.forEach(({ lat, lon, score }) => {
             const point = new Point({ latitude: lat, longitude: lon });
 
             const marker = new Graphic({
@@ -394,10 +393,41 @@ const MapViewComponent = ({
             placesLayerRef.current.add(marker);
         });
 
-        if (locations.length > 0 && view) {
+        if (locations.reference_point) {
+            console.log("Adding reference point: ", locations.reference_point);
+            const refPoint = new Point({
+                latitude: locations.reference_point.lat,
+                longitude: locations.reference_point.lon,
+            });
+
+            const refMarker = new Graphic({
+                geometry: refPoint,
+                symbol: {
+                    type: "simple-marker",
+                    style: "cross",
+                    color: [0, 120, 255], // bright blue
+                    size: 14,
+                    outline: {
+                        color: [0, 80, 200],
+                        width: 4,
+                    },
+                },
+                attributes: {
+                    name: "Reference Point",
+                },
+                popupTemplate: {
+                    title: "Reference Point",
+                    content: `Address: ${locations.reference_point.address}`,
+                },
+            });
+
+            placesLayerRef.current.add(refMarker);
+        }
+
+        if (locations.recommended_locations.length > 0 && view) {
             console.log("goTo locations: ", locations);
             view.goTo({
-                target: locations.map(
+                target: locations.recommended_locations.map(
                     ({ lat, lon }) =>
                         new Point({ latitude: lat, longitude: lon })
                 ),
@@ -407,7 +437,7 @@ const MapViewComponent = ({
     };
 
     useEffect(() => {
-        console.log("hi")
+        
         if (recommendedPlace) {
             addSuitabilityMarkers(recommendedPlace);
         }

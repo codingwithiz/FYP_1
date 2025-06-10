@@ -23,30 +23,31 @@ function App() {
         console.log("First Result Categories:", results[0]?.categories);
         setPlaces(results);
 
-        // Construct simplified objects to send to backend
-        const simplifiedResults = results.map((place) => ({
-            name: place.name,
-            placeId: place.placeId,
-            distance: place.distance,
-            location: place.location,
-            icon: place.icon?.url || null,
-            categories: place.categories?.map((cat) => cat.label) || [],
-        }));
+      
+        // // Construct simplified objects to send to backend
+        // const simplifiedResults = results.map((place) => ({
+        //     name: place.name,
+        //     placeId: place.placeId,
+        //     distance: place.distance,
+        //     location: place.location,
+        //     icon: place.icon?.url || null,
+        //     categories: place.categories?.map((cat) => cat.label) || [],
+        // }));
 
-        try {
-            const response = await api.post("/api/process-places", {
-                places: simplifiedResults,
-            });
+        // try {
+        //     const response = await api.post("/api/process-places", {
+        //         places: simplifiedResults,
+        //     });
 
-            console.log(
-                "Filtered + Processed Places:",
-                response.data.processed
-            );
-            setPlaces(response.data.processed);
-        } catch (error) {
-            console.error("Error sending places to backend:", error);
-            setPlaces(results); // fallback to original if backend fails
-        }
+        //     console.log(
+        //         "Filtered + Processed Places:",
+        //         response.data.processed
+        //     );
+        //     setPlaces(response.data.processed);
+        // } catch (error) {
+        //     console.error("Error sending places to backend:", error);
+        //     setPlaces(results); // fallback to original if backend fails
+        // }
     };
         
 
@@ -70,7 +71,7 @@ function App() {
             radius,
           });
       
-          const results = res.data.recommended_locations || [];
+          const results = res.data || [];
           console.log("Recommended locations:", results);
           setRecommendedPlace(results);
         } catch (err) {

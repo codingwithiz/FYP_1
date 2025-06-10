@@ -20,13 +20,14 @@ router.post("/api/suitability", async (req, res) => {
     try {
         // Step 1: Geocode the main location
         const coord = await arcgis.geocodeLocation(location); // returns { x, y }
+        console.log("Geocoded location:", coord);
         const normalizedCategory = normalizeCategory(category);
 
         // Step 2: Get category IDs and nearby places
         const categoryIds = await arcgis.getCategories(normalizedCategory);
         const places = await arcgis.getNearbyPlaces(
-            coord.y,
-            coord.x,
+            coord.location.y,
+            coord.location.x,
             radiusMeters,
             normalizedCategory,
             categoryIds
@@ -40,8 +41,8 @@ router.post("/api/suitability", async (req, res) => {
             lat: place.location.y,
             lon: place.location.x,
             score: scorePlaceByDistance(place, {
-                latitude: coord.y,
-                longitude: coord.x,
+                latitude: coord.location.y,
+                longitude: coord.location.x,
             }),
         }));
 
@@ -68,7 +69,7 @@ router.post("/api/suitability", async (req, res) => {
         // Step 5: Score each sampled coordinate using the same logic
         const finalResults = sampledCoords.map((point) => {
             const dist = require("haversine-distance")(
-                { latitude: coord.y, longitude: coord.x },
+                { latitude: coord.location.y, longitude: coord.location.x },
                 { latitude: point.lat, longitude: point.lon }
             );
 
@@ -81,8 +82,13 @@ router.post("/api/suitability", async (req, res) => {
         });
 
         const best = finalResults.sort((a, b) => b.score - a.score).slice(0, 3);
-
-        return res.json({ recommended_locations: best });
+        const reference_point = {
+            
+            address: coord.address,
+            lat: coord.location.y,
+            lon: coord.location.x,
+        };
+        return res.json({ recommended_locations: best, reference_point: reference_point });
     } catch (err) {
         console.error("Error in suitability route:", err);
         return res
