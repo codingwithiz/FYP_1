@@ -13,41 +13,41 @@ function App() {
     const [activeCategory, setActiveCategory] = useState(
         "4d4b7105d754a06377d81259"
     );
-    const [selectedPlace, setSelectedPlace] = useState(null);
+    const [recommendedPlace, setRecommendedPlace] = useState(null);
 
     const apiKey =
         "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
 
-      const handlePlacesFound = async (results) => {
-          console.log("Places found:", results.length);
-          console.log("First Result Categories:", results[0]?.categories);
-          setPlaces(results);
+    const handlePlacesFound = async (results) => {
+        console.log("Places found:", results.length);
+        console.log("First Result Categories:", results[0]?.categories);
+        setPlaces(results);
 
-          // Construct simplified objects to send to backend
-          const simplifiedResults = results.map((place) => ({
-              name: place.name,
-              placeId: place.placeId,
-              distance: place.distance,
-              location: place.location,
-              icon: place.icon?.url || null,
-              categories: place.categories?.map((cat) => cat.label) || [],
-          }));
+        // Construct simplified objects to send to backend
+        const simplifiedResults = results.map((place) => ({
+            name: place.name,
+            placeId: place.placeId,
+            distance: place.distance,
+            location: place.location,
+            icon: place.icon?.url || null,
+            categories: place.categories?.map((cat) => cat.label) || [],
+        }));
 
-          try {
-              const response = await api.post("/api/process-places", {
-                  places: simplifiedResults,
-              });
+        try {
+            const response = await api.post("/api/process-places", {
+                places: simplifiedResults,
+            });
 
-              console.log(
-                  "Filtered + Processed Places:",
-                  response.data.processed
-              );
-              setPlaces(response.data.processed);
-          } catch (error) {
-              console.error("Error sending places to backend:", error);
-              setPlaces(results); // fallback to original if backend fails
-          }
-      };
+            console.log(
+                "Filtered + Processed Places:",
+                response.data.processed
+            );
+            setPlaces(response.data.processed);
+        } catch (error) {
+            console.error("Error sending places to backend:", error);
+            setPlaces(results); // fallback to original if backend fails
+        }
+    };
         
 
     const handleCategoryChange = (category) => {
@@ -57,7 +57,7 @@ function App() {
 
     const handlePlaceSelect = (place) => {
         console.log("Selected place:", place);
-      setSelectedPlace(place);
+        setPlaces([place]);
     };
 
     const handleChatbotResult = async ({ location, category, radius }) => {
@@ -72,7 +72,7 @@ function App() {
       
           const results = res.data.recommended_locations || [];
           console.log("Recommended locations:", results);
-          setPlaces(results);
+          setRecommendedPlace(results);
         } catch (err) {
           console.error("Error calling suitability API:", err);
           alert("Could not fetch recommended locations.");
@@ -90,7 +90,7 @@ function App() {
             </nav>
 
             <Routes>
-                <Route path="/basemap" element={<Basemap />} />
+                <Route path="/basemap" element={<Basemap  />} />
 
                 <Route
                     path="/map"
@@ -112,7 +112,7 @@ function App() {
                                 />
                                 <PlacesPanel
                                     places={places}
-                                    selectedPlace={selectedPlace}
+                                    recommendedPlace={recommendedPlace}
                                     onPlaceSelect={handlePlaceSelect}
                                     onCategoryChange={handleCategoryChange}
                                 />
@@ -122,6 +122,7 @@ function App() {
                                     activeCategory={activeCategory}
                                     onPlacesFound={handlePlacesFound}
                                     onPlaceSelect={handlePlaceSelect}
+                                    recommendedPlace={recommendedPlace}
                                     apiKey={apiKey}
                                 />
                             </div>
@@ -162,7 +163,7 @@ export default App;
 //     const [activeCategory, setActiveCategory] = useState(
 //         "4d4b7105d754a06377d81259"
 //     );
-//     const [selectedPlace, setSelectedPlace] = useState(null);
+//     const [recommendedPlace, setRecommendedPlace] = useState(null);
 
 //     // Your ArcGIS API key
 //     const apiKey =
@@ -180,7 +181,7 @@ export default App;
 
 //     const handlePlaceSelect = (place) => {
 //         console.log("Selected place:", place);
-//         setSelectedPlace(place);
+//         setRecommendedPlace(place);
 //     };
 
 //     return (
@@ -188,7 +189,7 @@ export default App;
 //             <div className="sidebar">
 //                 <PlacesPanel
 //                     places={places}
-//                     selectedPlace={selectedPlace}
+//                     recommendedPlace={recommendedPlace}
 //                     onPlaceSelect={handlePlaceSelect}
 //                     onCategoryChange={handleCategoryChange}
 //                 />

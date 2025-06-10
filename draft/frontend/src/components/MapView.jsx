@@ -7,6 +7,7 @@ import Point from "@arcgis/core/geometry/Point.js";
 const MapViewComponent = ({
     activeCategory = "4d4b7105d754a06377d81259",
     onPlacesFound,
+    recommendedPlace,
     onPlaceSelect,
     apiKey,
 }) => {
@@ -236,7 +237,7 @@ const MapViewComponent = ({
             });
 
             const results = await places.queryPlacesNearPoint(queryParams);
-            
+
             if (results.results && results.results.length > 0) {
                 results.results.forEach(addResult);
                 onPlacesFound && onPlacesFound(results.results);
@@ -342,11 +343,14 @@ const MapViewComponent = ({
 
     const handleSuitabilityRequest = async () => {
         try {
-            const response = await axios.post("http://localhost:3001/api/suitability", {
-                location: "Universiti Malaya", // or lastClickPoint if geocoded
-                category: "hospitals",
-                radius: 1000,
-            });
+            const response = await axios.post(
+                "http://localhost:3001/api/suitability",
+                {
+                    location: "Universiti Malaya", // or lastClickPoint if geocoded
+                    category: "hospitals",
+                    radius: 1000,
+                }
+            );
 
             const data = response.data;
             const results = data.recommended_locations;
@@ -401,13 +405,17 @@ const MapViewComponent = ({
             });
         }
     };
-    
+
     useEffect(() => {
+        console.log("hi")
+        if (recommendedPlace) {
+            addSuitabilityMarkers(recommendedPlace);
+        }
         if (selectedPlaceId && view && placesLayerRef.current) {
             const placeGraphic = placesLayerRef.current.graphics.find(
                 (g) => g.placeId === selectedPlaceId
             );
-
+            
             if (placeGraphic) {
                 view.openPopup({
                     location: placeGraphic.geometry,
@@ -417,8 +425,11 @@ const MapViewComponent = ({
 
                 view.goTo(placeGraphic);
             }
+            
+            
         }
-    }, [selectedPlaceId, view]);
+        
+    }, [selectedPlaceId, view, recommendedPlace]);
 
     return (
         <>
