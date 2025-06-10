@@ -41,6 +41,7 @@ const MapViewComponent = ({
                 "esri/widgets/BasemapGallery",
                 "esri/widgets/Expand",
                 "esri/widgets/Search",
+                "esri/widgets/Legend",
             ],
             { version: "4.32", css: true }
         )
@@ -59,6 +60,7 @@ const MapViewComponent = ({
                     BasemapGallery,
                     Expand,
                     Search,
+                    Legend,
                 ]) => {
                     esriConfig.apiKey = apiKey;
 
@@ -76,6 +78,7 @@ const MapViewComponent = ({
                         Expand,
                         Search,
                         esriConfig,
+                        Legend,
                     });
 
                     const bufferLayer = new GraphicsLayer({
@@ -139,6 +142,32 @@ const MapViewComponent = ({
                             index: 0,
                         });
 
+                        const legend = new Legend({
+                            view: mapView,
+                            layerInfos: [
+                                {
+                                    layer: placesLayer,
+                                    title: "Locations",
+                                },
+                            ],
+                        });
+
+                        mapView.ui.add(legend, "bottom-left");
+                        mapView.on("pointer-move", (event) => {
+                            mapView.hitTest(event).then((response) => {
+                                const graphic = response.results.find(
+                                    (r) => r.graphic.layer === placesLayer
+                                )?.graphic;
+
+                                if (graphic && graphic.popupTemplate) {
+                                    mapView.openPopup({
+                                        location: graphic.geometry,
+                                        title: graphic.popupTemplate.title,
+                                        content: graphic.popupTemplate.content,
+                                    });
+                                }
+                            });
+                        });
                         // Map click handler
                         mapView.on("click", (event) => {
                             console.log("event map point: ", event.mapPoint);
@@ -445,6 +474,8 @@ const MapViewComponent = ({
             const placeGraphic = placesLayerRef.current.graphics.find(
                 (g) => g.placeId === selectedPlaceId
             );
+
+            console.log("placeGraphic: ", placeGraphic);
             
             if (placeGraphic) {
                 view.openPopup({
