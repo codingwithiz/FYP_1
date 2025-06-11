@@ -1,3 +1,4 @@
+version: "3.8"
 
 services:
   db:
@@ -6,26 +7,47 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "YourStrong!Pass123"
+    volumes:
+      - mssqldata:/var/opt/mssql
     ports:
       - "1433:1433"
     networks:
       - app-network
 
-  backend:
-    build: .
-    container_name: express-backend
-    ports:
-      - "3001:3001"
+  db-init:
+    image: mcr.microsoft.com/mssql-tools
     depends_on:
       - db
+    volumes:
+      - ./database/init.sql:/init.sql:ro
+    entrypoint: >
+      bash -c "
+        echo '⏳ Waiting for SQL Server to be ready...' &&
+        sleep 20 &&
+        /opt/mssql-tools/bin/sqlcmd -S db -U sa -P 'YourStrong!Pass123' -i /init.sql &&
+        echo '✅ init.sql executed.'
+      "
     networks:
       - app-network
-    environment:
-      DB_USER: sa
-      DB_PASSWORD: YourStrong!Pass123
-      DB_NAME: MyAppDB
-      DB_HOST: db
+
+  # backend:
+  #   build: .
+  #   container_name: express-backend
+  #   ports:
+  #     - "3001:3001"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app-network
+  #   environment:
+  #     DB_USER: sa
+  #     DB_PASSWORD: YourStrong!Pass123
+  #     DB_NAME: MyAppDB
+  #     DB_HOST: db
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mssqldata:

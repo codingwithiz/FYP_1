@@ -3,7 +3,7 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const sql = require("mssql");
-const config = require("./dbConfig");
+const config = require("./database/dbConfig");
 const PORT = 3001;
 const app = express();
 
