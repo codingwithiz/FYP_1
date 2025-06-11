@@ -1,9 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
-require("dotenv").config();
-const app = express();
+const sql = require("mssql");
+const config = require("./dbConfig");
 const PORT = 3001;
+const app = express();
 
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -51,67 +53,75 @@ app.post("/api/process-places", processPlacesRoute);
 
 app.post("/api/suitability", require("./routes/suitability"));
 
-
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// Mock logic below – Replace with real API logic
-function extractIntent(text) {
-    return {
-        near: "universities",
-        footTraffic: "high",
-        competition: "low",
-    };
-}
-
-async function findUniversities() {
-    return [
-        { name: "University A", latitude: 40.73061, longitude: -73.935242 },
-        { name: "University B", latitude: 40.7291, longitude: -73.9965 },
-    ];
-}
-
-async function findNearbyUniversities(lat, lon) {
-    const radius = 2000; // in meters
-    const esriUrl = `https://places-api.arcgis.com/arcgis/rest/services/places-service/v1/categories`;
-
-    const response = await axios.get(esriUrl, {
-        headers: { Authorization: `Bearer ${ESRI_API_KEY}` },
-        params: {
-            categories: "4d4b7105d754a06377d81259",
-            lat,
-            lon,
-            radius,
-            limit: 10,
-        },
+sql.connect(config)
+    .then(() => {
+        console.log("✅ Connected to SQL Server");
+        app.listen(PORT, () =>
+            console.log(`🚀 Server running on port ${PORT}`)
+        );
+    })
+    .catch((err) => {
+        console.error("❌ Failed to connect to SQL Server:", err);
+        process.exit(1); // Exit app if DB fails to connect
     });
+// Mock logic below – Replace with real API logic
+// function extractIntent(text) {
+//     return {
+//         near: "universities",
+//         footTraffic: "high",
+//         competition: "low",
+//     };
+// }
 
-    return response.data.results.map((place) => ({
-        name: place.name,
-        latitude: place.location.y,
-        longitude: place.location.x,
-        address: place.addresses?.[0]?.address || "No address",
-    }));
-}
+// async function findUniversities() {
+//     return [
+//         { name: "University A", latitude: 40.73061, longitude: -73.935242 },
+//         { name: "University B", latitude: 40.7291, longitude: -73.9965 },
+//     ];
+// }
 
+// async function findNearbyUniversities(lat, lon) {
+//     const radius = 2000; // in meters
+//     const esriUrl = `https://places-api.arcgis.com/arcgis/rest/services/places-service/v1/categories`;
 
-async function countNearbyGyms({ latitude, longitude }) {
-    // Use Google Places or Esri Places API
-    return Math.floor(Math.random() * 10); // Mock
-}
+//     const response = await axios.get(esriUrl, {
+//         headers: { Authorization: `Bearer ${ESRI_API_KEY}` },
+//         params: {
+//             categories: "4d4b7105d754a06377d81259",
+//             lat,
+//             lon,
+//             radius,
+//             limit: 10,
+//         },
+//     });
 
-async function getPopulationData({ latitude, longitude }) {
-    return Math.random(); // Mock: 0 to 1
-}
+//     return response.data.results.map((place) => ({
+//         name: place.name,
+//         latitude: place.location.y,
+//         longitude: place.location.x,
+//         address: place.addresses?.[0]?.address || "No address",
+//     }));
+// }
 
-async function getTransitScore({ latitude, longitude }) {
-    return Math.random(); // Mock: 0 to 1
-}
+// async function countNearbyGyms({ latitude, longitude }) {
+//     // Use Google Places or Esri Places API
+//     return Math.floor(Math.random() * 10); // Mock
+// }
 
-function computeSuitabilityScore({ competition, demographics, accessibility }) {
-    return (
-        (1 - competition / 10) * 0.4 + demographics * 0.3 + accessibility * 0.3
-    );
-}
+// async function getPopulationData({ latitude, longitude }) {
+//     return Math.random(); // Mock: 0 to 1
+// }
+
+// async function getTransitScore({ latitude, longitude }) {
+//     return Math.random(); // Mock: 0 to 1
+// }
+
+// function computeSuitabilityScore({ competition, demographics, accessibility }) {
+//     return (
+//         (1 - competition / 10) * 0.4 + demographics * 0.3 + accessibility * 0.3
+//     );
+// }
 
 //chatbot
 const chatbotRoute = require("./routes/chatbot");
