@@ -1,210 +1,143 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import Basemap from "./components/Esrimap";
 import PlacesPanel from "./components/PlacesPanel";
 import MapViewComponent from "./components/MapView";
 import Chatbot from "./components/Chatbot";
+import AuthPage from "./components/AuthPage";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebase";
 import "./App.css";
-import axios from "axios";
 import api from "./api/api";
 
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/auth" replace />;
+}
+
 function App() {
-    const [places, setPlaces] = useState([]);
-    const [activeCategory, setActiveCategory] = useState(
-        "4d4b7105d754a06377d81259"
-    );
-    const [recommendedPlace, setRecommendedPlace] = useState(null);
+  const [places, setPlaces] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("4d4b7105d754a06377d81259");
+  const [recommendedPlace, setRecommendedPlace] = useState(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-    const apiKey =
-        "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
+  const apiKey =
+    "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
 
-    const handlePlacesFound = async (results) => {
-        console.log("Places found:", results.length);
-        console.log("First Result Categories:", results[0]?.categories);
-        setPlaces(results);
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/auth");
+  };
 
-      
-        // // Construct simplified objects to send to backend
-        // const simplifiedResults = results.map((place) => ({
-        //     name: place.name,
-        //     placeId: place.placeId,
-        //     distance: place.distance,
-        //     location: place.location,
-        //     icon: place.icon?.url || null,
-        //     categories: place.categories?.map((cat) => cat.label) || [],
-        // }));
+  const handlePlacesFound = (results) => {
+    console.log("Places found:", results.length);
+    setPlaces(results);
+  };
 
-        // try {
-        //     const response = await api.post("/api/process-places", {
-        //         places: simplifiedResults,
-        //     });
+  const handleCategoryChange = (category) => {
+    setActiveCategory(category);
+  };
 
-        //     console.log(
-        //         "Filtered + Processed Places:",
-        //         response.data.processed
-        //     );
-        //     setPlaces(response.data.processed);
-        // } catch (error) {
-        //     console.error("Error sending places to backend:", error);
-        //     setPlaces(results); // fallback to original if backend fails
-        // }
-    };
-        
+  const handlePlaceSelect = (place) => {
+    setPlaces([place]);
+  };
 
-    const handleCategoryChange = (category) => {
-        console.log("Category changed to:", category);
-        setActiveCategory(category);
-    };
+  const handleChatbotResult = async ({ location, category, radius }) => {
+    console.log("Chatbot result received:", { location, category, radius });
+    try {
+      const res = await api.post("/api/suitability", {
+        location,
+        category,
+        radius,
+      });
+      const results = res.data || [];
+      console.log("Recommended places:", results);
+      setRecommendedPlace(results);
+    } catch (err) {
+      console.error("Error calling suitability API:", err);
+      alert("Could not fetch recommended locations.");
+    }
+  };
 
-    const handlePlaceSelect = (place) => {
-        console.log("Selected place:", place);
-        setPlaces([place]);
-    };
+  return (
+    <>
+      <nav
+        style={{
+          padding: "1rem",
+          backgroundColor: "#eee",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          {user && (
+            <>
+              <Link to="/map" style={{ marginRight: "1rem" }}>
+                Places Services
+              </Link>
+              <Link to="/basemap">Basemap</Link>
+            </>
+          )}
+        </div>
+        {user && (
+          <button onClick={handleLogout} style={{ marginLeft: "auto" }}>
+            Logout
+          </button>
+        )}
+      </nav>
 
-    const handleChatbotResult = async ({ location, category, radius }) => {
-        console.log("Chatbot returned:", { location, category, radius });
-      
-        try {
-          const res = await api.post("/api/suitability", {
-            location,
-            category,
-            radius,
-          });
-      
-          const results = res.data || [];
-          console.log("Recommended locations:", results);
-          setRecommendedPlace(results);
-        } catch (err) {
-          console.error("Error calling suitability API:", err);
-          alert("Could not fetch recommended locations.");
-        }
-      };
-      
+      <Routes>
+        {/* Default route redirects to auth page */}
+        <Route path="/" element={<Navigate to="/auth" replace />} />
 
-    return (
-        <Router>
-            <nav style={{ padding: "1rem", backgroundColor: "#eee" }}>
-                <Link to="/basemap" style={{ marginRight: "1rem" }}>
-                    Basemap
-                </Link>
-                <Link to="/map">Places Services</Link>
-            </nav>
+        {/* Auth login/signup */}
+        <Route path="/auth" element={<AuthPage />} />
 
-            <Routes>
-                <Route path="/basemap" element={<Basemap  />} />
+        {/* Protected routes */}
+        <Route
+          path="/map"
+          element={
+            <ProtectedRoute>
+              <div className="app-container" style={{ display: "flex", height: "100vh" }}>
+                <div className="sidebar" style={{ width: "300px", overflowY: "auto", borderRight: "1px solid #ccc" }}>
+                  <Chatbot onExtracted={handleChatbotResult} />
+                  <PlacesPanel
+                    places={places}
+                    recommendedPlace={recommendedPlace}
+                    onPlaceSelect={handlePlaceSelect}
+                    onCategoryChange={handleCategoryChange}
+                  />
+                </div>
+                <div className="map-container" style={{ flex: 1 }}>
+                  <MapViewComponent
+                    activeCategory={activeCategory}
+                    onPlacesFound={handlePlacesFound}
+                    onPlaceSelect={handlePlaceSelect}
+                    recommendedPlace={recommendedPlace}
+                    apiKey={apiKey}
+                  />
+                </div>
+              </div>
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="/map"
-                    element={
-                        <div
-                            className="app-container"
-                            style={{ display: "flex", height: "100vh" }}
-                        >
-                            <div
-                                className="sidebar"
-                                style={{
-                                    width: "300px",
-                                    overflowY: "auto",
-                                    borderRight: "1px solid #ccc",
-                                }}
-                            >
-                                <Chatbot
-                                    onExtracted={handleChatbotResult}
-                                />
-                                <PlacesPanel
-                                    places={places}
-                                    recommendedPlace={recommendedPlace}
-                                    onPlaceSelect={handlePlaceSelect}
-                                    onCategoryChange={handleCategoryChange}
-                                />
-                            </div>
-                            <div className="map-container" style={{ flex: 1 }}>
-                                <MapViewComponent
-                                    activeCategory={activeCategory}
-                                    onPlacesFound={handlePlacesFound}
-                                    onPlaceSelect={handlePlaceSelect}
-                                    recommendedPlace={recommendedPlace}
-                                    apiKey={apiKey}
-                                />
-                            </div>
-                        </div>
-                    }
-                />
+        <Route
+          path="/basemap"
+          element={
+            <ProtectedRoute>
+              <Basemap />
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="*"
-                    element={
-                        <div style={{ padding: "1rem" }}>
-                            <h2>Welcome! Please select a view:</h2>
-                            <ul>
-                                <li>
-                                    <Link to="/basemap">Basemap</Link>
-                                </li>
-                                <li>
-                                    <Link to="/map">Places Services</Link>
-                                </li>
-                            </ul>
-                        </div>
-                    }
-                />
-            </Routes>
-        </Router>
-    );
+        {/* Any other path redirects to auth */}
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    </>
+  );
 }
 
 export default App;
-
-// import React, { useState } from "react";
-// import MapViewComponent from "./components/MapView";
-// import PlacesPanel from "./components/PlacesPanel";
-// import "./App.css";
-
-// function App() {
-//     const [places, setPlaces] = useState([]);
-//     const [activeCategory, setActiveCategory] = useState(
-//         "4d4b7105d754a06377d81259"
-//     );
-//     const [recommendedPlace, setRecommendedPlace] = useState(null);
-
-//     // Your ArcGIS API key
-//     const apiKey =
-//         "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
-
-//     const handlePlacesFound = (results) => {
-//         console.log("Places found:", results.length);
-//         setPlaces(results);
-//     };
-
-//     const handleCategoryChange = (category) => {
-//         console.log("Category changed to:", category);
-//         setActiveCategory(category);
-//     };
-
-//     const handlePlaceSelect = (place) => {
-//         console.log("Selected place:", place);
-//         setRecommendedPlace(place);
-//     };
-
-//     return (
-//         <div className="app-container">
-//             <div className="sidebar">
-//                 <PlacesPanel
-//                     places={places}
-//                     recommendedPlace={recommendedPlace}
-//                     onPlaceSelect={handlePlaceSelect}
-//                     onCategoryChange={handleCategoryChange}
-//                 />
-//             </div>
-//             <div className="map-container">
-//                 <MapViewComponent
-//                     activeCategory={activeCategory}
-//                     onPlacesFound={handlePlacesFound}
-//                     onPlaceSelect={handlePlaceSelect}
-//                     apiKey={apiKey}
-//                 />
-//             </div>
-//         </div>
-//     );
-// }
-
-// export default App;

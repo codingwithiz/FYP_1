@@ -7,6 +7,7 @@ const config = require("./database/dbConfig");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const conversationRoutes = require("./routes/conversationRoutes");
+const authRoutes = require("./routes/auth");
 const PORT = 3001;
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use("/users", userRoutes);
 app.use("/chats", chatRoutes);
 app.use("/conversations", conversationRoutes);
+app.use("/auth", authRoutes);
 
 app.post("/analyze-location", async (req, res) => {
     const { userInput } = req.body;
