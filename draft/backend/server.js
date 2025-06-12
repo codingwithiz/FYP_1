@@ -4,11 +4,14 @@ const axios = require("axios");
 const cors = require("cors");
 const sql = require("mssql");
 const config = require("./database/dbConfig");
+const userRoutes = require("./routes/userRoutes");
 const PORT = 3001;
 const app = express();
 
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
+
+app.use("/users", userRoutes);
 
 app.post("/analyze-location", async (req, res) => {
     const { userInput } = req.body;
@@ -48,10 +51,39 @@ app.post("/analyze-location", async (req, res) => {
     }
 });
 
-const processPlacesRoute = require("./routes/processPlaces");
-app.post("/api/process-places", processPlacesRoute);
+//places
+app.post("/api/process-places", require("./routes/processPlaces"));
 
+//suitability
 app.post("/api/suitability", require("./routes/suitability"));
+
+//chatbot
+const chatbotRoute = require("./routes/chatbot");
+app.use(chatbotRoute);
+
+//READ
+app.get("/users", async (req, res) => {
+    try {
+        
+        const result = await sql.query("SELECT * FROM Users");
+        res.json(result.recordset);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+//CREATE
+app.post("/users", async (req, res) => {
+    try {
+        const { userId, name, preferenceId } = req.body;
+        
+        await sql.query`INSERT INTO Users (userId, name, preferenceId) VALUES (${userId}, ${name}, ${preferenceId})`;
+        res.status(201).send("User created");
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+  
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 sql.connect(config)
@@ -123,6 +155,4 @@ sql.connect(config)
 //     );
 // }
 
-//chatbot
-const chatbotRoute = require("./routes/chatbot");
-app.use(chatbotRoute);
+
