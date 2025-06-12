@@ -5,6 +5,8 @@ const cors = require("cors");
 const sql = require("mssql");
 const config = require("./database/dbConfig");
 const userRoutes = require("./routes/userRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const conversationRoutes = require("./routes/conversationRoutes");
 const PORT = 3001;
 const app = express();
 
@@ -12,6 +14,8 @@ app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
 
 app.use("/users", userRoutes);
+app.use("/chats", chatRoutes);
+app.use("/conversations", conversationRoutes);
 
 app.post("/analyze-location", async (req, res) => {
     const { userInput } = req.body;
