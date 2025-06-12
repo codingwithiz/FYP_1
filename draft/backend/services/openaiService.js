@@ -48,4 +48,55 @@ Always return a clean, parsable JSON object. Your job is to provide data that ca
   return response.choices[0].message.content;
 }
 
-module.exports = { askChatbot };
+async function generateReasoning({ userIntent, center, recommendations }) {
+  const { OpenAI } = require("openai");
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  const REASONING_SYSTEM_PROMPT = `
+You are a GIS assistant in Malaysia helping businesses choose ideal locations.
+You are given the user's business intent, a central coordinate, and 3 recommended coordinates with suitability scores.
+
+Your task is to explain in clear, concise sentences WHY each location is recommended, using:
+- Its proximity to the central point
+- Its score (higher = better)
+- Its alignment with the user's intent
+
+Each explanation must be 1–2 sentences and must vary based on the location's score and distance. Use real reasoning logic (e.g., “This point is closest”, “Moderately far but has high potential”).
+
+Respond ONLY with a valid JSON array (no markdown):
+
+[
+  {
+    "lat": 3.123,
+    "lon": 101.678,
+    "reason": "This location is very close to the center and has a high suitability score of 89.1, making it ideal for the user's business intent."
+  },
+  ...
+]
+`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: REASONING_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: JSON.stringify({
+          userIntent,
+          center,
+          recommendations,
+        }),
+      },
+    ],
+    temperature: 0.2,
+  });
+
+  // Strip markdown block if any
+  let content = response.choices[0].message.content;
+  const match = content.match(/```json\s*([\s\S]*?)\s*```/i);
+  if (match) content = match[1];
+
+  return content.trim();
+}
+
+module.exports = { askChatbot, generateReasoning };

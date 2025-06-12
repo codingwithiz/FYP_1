@@ -395,7 +395,7 @@ const MapViewComponent = ({
         const { Graphic, Point } = esriModules;
         placesLayerRef.current.removeAll(); // Optional: Clear previous
 
-        locations.recommended_locations.forEach(({ lat, lon, score }) => {
+        locations.recommended_locations.forEach(({ lat, lon, score, reason }) => {
             const point = new Point({ latitude: lat, longitude: lon });
 
             const marker = new Graphic({
@@ -415,7 +415,7 @@ const MapViewComponent = ({
                 },
                 popupTemplate: {
                     title: "Recommended Location",
-                    content: `Score: ${score}`,
+                    content: `Score: ${score}<br>Reason: ${reason}`,
                 },
             });
 

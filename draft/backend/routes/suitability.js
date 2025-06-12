@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const arcgis = require("../services/arcgisServices");
 const { scorePlaceByDistance } = require("../services/suitabilityScorer");
+const { generateReasoning } = require("../services/openaiService");
+
 
 router.post("/api/suitability", async (req, res) => {
     const { location, category, radius } = req.body;
@@ -88,7 +90,52 @@ router.post("/api/suitability", async (req, res) => {
             lat: coord.location.y,
             lon: coord.location.x,
         };
-        return res.json({ recommended_locations: best, reference_point: reference_point });
+        
+        const userIntent = `I want to open a ${category} business near ${location}.`;
+        let enriched = best;
+
+        try {
+            const explanationText = await generateReasoning({
+                userIntent,
+                center: {
+                    lat: coord.location.y,
+                    lon: coord.location.x,
+                },
+                recommendations: best,
+            });
+
+            // Strip markdown-style code block if GPT wraps it
+            let cleaned = explanationText;
+            const match = explanationText.match(/```json\s*([\s\S]*?)```/i);
+            if (match) {
+                cleaned = match[1];
+            }
+
+            const explanations = JSON.parse(cleaned);
+
+            enriched = best.map((loc) => {
+                const match = explanations.find(
+                    (e) => e.lat === loc.lat && e.lon === loc.lon
+                );
+                return {
+                    ...loc,
+                    reason: match?.reason || "No explanation available.",
+                };
+            });
+        } catch (reasoningErr) {
+            console.warn("OpenAI reasoning failed:", reasoningErr.message);
+            // Fallback to no reason
+            enriched = best.map((loc) => ({
+                ...loc,
+                reason: "Reasoning not available.",
+            }));
+        }
+
+        return res.json({
+            recommended_locations: enriched,
+            reference_point: reference_point,
+        });
+
     } catch (err) {
         console.error("Error in suitability route:", err);
         return res
