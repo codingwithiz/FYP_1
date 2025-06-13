@@ -453,16 +453,21 @@ const MapViewComponent = ({
             placesLayerRef.current.add(refMarker);
         }
 
-        if (locations.recommended_locations.length > 0 && view) {
-            console.log("goTo locations: ", locations);
-            view.goTo({
-                target: locations.recommended_locations.map(
-                    ({ lat, lon }) =>
-                        new Point({ latitude: lat, longitude: lon })
-                ),
-                zoom: 15,
-            });
-        }
+        if (locations.recommended_locations.length > 0 && view && esriModules?.Point) {
+    const { Point } = esriModules;
+
+    const targetPoints = locations.recommended_locations.map(
+        ({ lat, lon }) =>
+            new Point({
+                latitude: lat,
+                longitude: lon,
+            })
+    );
+
+    view.goTo(targetPoints, { zoom: 15 }).catch((error) => {
+        console.error("view.goTo failed:", error);
+    });
+}
     };
 
     useEffect(() => {

@@ -16,7 +16,9 @@ function Chatbot({ onExtracted }) {
       });
 
       const result = res.data;
-      if (onExtracted && result.location && result.category) {
+      console.log("Chatbot response:", result);
+      if (onExtracted && result.category && (result.location || result.nearbyMe)) {
+        console.log("Chatbot result:", result);
         onExtracted(result);
       }
     } catch (err) {

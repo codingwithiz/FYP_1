@@ -6,7 +6,7 @@ const { generateReasoning } = require("../services/openaiService");
 
 
 router.post("/api/suitability", async (req, res) => {
-    const { location, category, radius } = req.body;
+    const { locationName, category, radius, currentLocation, nearbyMe } = req.body;
     const radiusMeters = radius || 1000;
 
     const CATEGORY_MAP = {
@@ -21,12 +21,25 @@ router.post("/api/suitability", async (req, res) => {
 
     try {
         // Step 1: Geocode the main location
-        const coord = await arcgis.geocodeLocation(location); // returns { x, y }
-        console.log("Geocoded location:", coord);
-        const normalizedCategory = normalizeCategory(category);
+        let coord;
+        if (nearbyMe && currentLocation) {
+            coord = {
+                location: {
+                    y: currentLocation.lat,
+                    x: currentLocation.lon,
+                }
+            };
+            console.log("Geocoded location using current location:", coord);
+        } else {
+            coord = await arcgis.geocodeLocation(locationName); // returns { x, y }
+            console.log("Geocoded location using location name:", coord);
+        }
+        
 
         // Step 2: Get category IDs and nearby places
+        const normalizedCategory = normalizeCategory(category);
         const categoryIds = await arcgis.getCategories(normalizedCategory);
+
         const places = await arcgis.getNearbyPlaces(
             coord.location.y,
             coord.location.x,
@@ -91,7 +104,7 @@ router.post("/api/suitability", async (req, res) => {
             lon: coord.location.x,
         };
         
-        const userIntent = `I want to open a ${category} business near ${location}.`;
+        const userIntent = `I want to open a ${category} business near ${(locationName ? locationName : "me")}.`;
         let enriched = best;
 
         try {
