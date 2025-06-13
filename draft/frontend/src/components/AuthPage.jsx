@@ -6,6 +6,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,6 +14,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate(); // Add this line
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -26,7 +28,7 @@ const AuthPage = () => {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
       }
       const token = await userCredential.user.getIdToken();
-      const res = await axios.post("http://localhost:3001/auth/verify", { token });
+      await axios.post("http://localhost:3001/auth/verify", { token });
       setSuccess(isLogin ? "Login successful!" : "Signup successful!");
     } catch (err) {
       setError(err.message);
@@ -39,56 +41,146 @@ const AuthPage = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
-      const res = await axios.post("http://localhost:3001/auth/verify", { token });
+      await axios.post("http://localhost:3001/auth/verify", { token });
       setSuccess("Google login successful!");
+      navigate("/map"); // Redirect to /map after success
     } catch (err) {
       setError(err.message);
     }
   };
 
   return (
-    <div style={{
-      maxWidth: 350,
-      margin: "60px auto",
-      padding: 24,
-      border: "1px solid #ddd",
-      borderRadius: 8,
-      background: "#fff"
-    }}>
-      <h2 style={{ textAlign: "center" }}>{isLogin ? "Login" : "Sign Up"}</h2>
-      <form onSubmit={handleAuth} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          required
-          onChange={e => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          required
-          onChange={e => setPassword(e.target.value)}
-        />
-        <button type="submit">{isLogin ? "Login" : "Sign Up"}</button>
-      </form>
-      <button onClick={handleGoogle} style={{ marginTop: 12, width: "100%" }}>
-        Continue with Google
-      </button>
-      <div style={{ marginTop: 16, textAlign: "center" }}>
-        <span>
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #e3f0ff 0%, #f9f9f9 100%)",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          width: 400,         // force width
+          maxWidth: "90vw",
+          margin: "100px auto",
+          padding: 40, // more padding
+          border: "1px solid #e0e6ed",
+          borderRadius: 20,
+          background: "#fff",
+          boxShadow: "0 4px 24px rgba(25, 118, 210, 0.07)",
+        }}
+      >
+        <h2 style={{ textAlign: "center", marginBottom: 24, color: "#222", fontWeight: 700, letterSpacing: 1 }}>
+          {isLogin ? "Login" : "Sign Up"}
+        </h2>
+        <form onSubmit={handleAuth} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            required
+            onChange={e => setEmail(e.target.value)}
+            style={{
+              padding: "12px 14px",
+              borderRadius: 8,
+              border: "1px solid #cfd8dc",
+              fontSize: 16,
+              outline: "none",
+              transition: "border 0.2s",
+            }}
+            onFocus={e => (e.target.style.border = "1.5px solid #1976d2")}
+            onBlur={e => (e.target.style.border = "1px solid #cfd8dc")}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            required
+            onChange={e => setPassword(e.target.value)}
+            style={{
+              padding: "12px 14px",
+              borderRadius: 8,
+              border: "1px solid #cfd8dc",
+              fontSize: 16,
+              outline: "none",
+              transition: "border 0.2s",
+            }}
+            onFocus={e => (e.target.style.border = "1.5px solid #1976d2")}
+            onBlur={e => (e.target.style.border = "1px solid #cfd8dc")}
+          />
           <button
-            style={{ color: "#1976d2", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-            onClick={() => setIsLogin(!isLogin)}
+            type="submit"
+            style={{
+              background: "#1976d2",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              padding: "12px 0",
+              fontWeight: 600,
+              fontSize: 17,
+              marginTop: 8,
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(25, 118, 210, 0.08)",
+              transition: "background 0.2s",
+            }}
+            onMouseOver={e => (e.currentTarget.style.background = "#1251a3")}
+            onMouseOut={e => (e.currentTarget.style.background = "#1976d2")}
           >
-            {isLogin ? "Sign Up" : "Login"}
+            {isLogin ? "Login" : "Sign Up"}
           </button>
-        </span>
+        </form>
+        <div style={{ margin: "18px 0", display: "flex", alignItems: "center" }}>
+          <div style={{ flex: 1, height: 1, background: "#e0e0e0" }} />
+          <span style={{ margin: "0 12px", color: "#888", fontSize: 14 }}>or</span>
+          <div style={{ flex: 1, height: 1, background: "#e0e0e0" }} />
+        </div>
+        <button
+          onClick={handleGoogle}
+          style={{
+            width: "100%",
+            background: "#fff",
+            color: "#222",
+            border: "1px solid #cfd8dc",
+            borderRadius: 8,
+            padding: "12px 0",
+            fontWeight: 600,
+            fontSize: 16,
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(25, 118, 210, 0.04)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            transition: "border 0.2s",
+          }}
+          onMouseOver={e => (e.currentTarget.style.border = "1.5px solid #1976d2")}
+          onMouseOut={e => (e.currentTarget.style.border = "1px solid #cfd8dc")}
+        >
+          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: 22, height: 22 }} />
+          Continue with Google
+        </button>
+        <div style={{ marginTop: 20, textAlign: "center", fontSize: 15 }}>
+          <span>
+            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button
+              style={{
+                color: "#1976d2",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                fontWeight: 600,
+                fontSize: 15,
+              }}
+              onClick={() => setIsLogin(!isLogin)}
+            >
+              {isLogin ? "Sign Up" : "Login"}
+            </button>
+          </span>
+        </div>
+        {error && <div style={{ color: "#d32f2f", marginTop: 14, textAlign: "center", fontWeight: 500 }}>{error}</div>}
+        {success && <div style={{ color: "#388e3c", marginTop: 14, textAlign: "center", fontWeight: 500 }}>{success}</div>}
       </div>
-      {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
-      {success && <div style={{ color: "green", marginTop: 12 }}>{success}</div>}
     </div>
   );
 };

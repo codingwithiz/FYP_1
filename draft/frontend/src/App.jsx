@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Basemap from "./components/Esrimap";
-import PlacesPanel from "./components/PlacesPanel";
 import MapViewComponent from "./components/MapView";
 import Chatbot from "./components/Chatbot";
 import AuthPage from "./components/AuthPage";
@@ -10,7 +9,6 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import "./App.css";
 import api from "./api/api";
-
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -26,6 +24,7 @@ function App() {
   const [currentLocation, setCurrentLocation] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   const apiKey =
       "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
@@ -139,24 +138,85 @@ function App() {
     <>
       <nav
         style={{
-          padding: "1rem",
-          backgroundColor: "#eee",
+          padding: "0.75rem 2rem",
+          background: "#fff",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           display: "flex",
+          alignItems: "center",
           justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          minHeight: 64,
         }}
       >
-        <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+          <span style={{
+            fontWeight: 700,
+            fontSize: 22,
+            color: "#1976d2",
+            letterSpacing: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}>
+            <svg width="28" height="28" fill="#1976d2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+            NiagaMap
+          </span>
           {user && (
             <>
-              <Link to="/map" style={{ marginRight: "1rem" }}>
+              <Link
+                to="/map"
+                style={{
+                  color: "#1976d2",
+                  fontWeight: 500,
+                  textDecoration: "none",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  transition: "background 0.2s",
+                }}
+                onMouseOver={e => e.currentTarget.style.background = "#f0f7ff"}
+                onMouseOut={e => e.currentTarget.style.background = "transparent"}
+              >
                 Places Services
               </Link>
-              <Link to="/basemap">Basemap</Link>
+              <Link
+                to="/basemap"
+                style={{
+                  color: "#1976d2",
+                  fontWeight: 500,
+                  textDecoration: "none",
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  transition: "background 0.2s",
+                }}
+                onMouseOver={e => e.currentTarget.style.background = "#f0f7ff"}
+                onMouseOut={e => e.currentTarget.style.background = "transparent"}
+              >
+                Basemap
+              </Link>
             </>
           )}
         </div>
         {user && (
-          <button onClick={handleLogout} style={{ marginLeft: "auto" }}>
+          <button
+            onClick={handleLogout}
+            style={{
+              marginLeft: "auto",
+              background: "#f44336",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              padding: "8px 20px",
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(244,67,54,0.08)",
+              transition: "background 0.2s",
+            }}
+            onMouseOver={e => e.currentTarget.style.background = "#d32f2f"}
+            onMouseOut={e => e.currentTarget.style.background = "#f44336"}
+          >
             Logout
           </button>
         )}
@@ -174,17 +234,9 @@ function App() {
           path="/map"
           element={
             <ProtectedRoute>
-              <div className="app-container" style={{ display: "flex", height: "100vh" }}>
-                <div className="sidebar" style={{ width: "300px", overflowY: "auto", borderRight: "1px solid #ccc" }}>
-                  <Chatbot onExtracted={handleChatbotResult} />
-                  <PlacesPanel
-                    places={places}
-                    recommendedPlace={recommendedPlace}
-                    onPlaceSelect={handlePlaceSelect}
-                    onCategoryChange={handleCategoryChange}
-                  />
-                </div>
-                <div className="map-container" style={{ flex: 1 }}>
+              <div className="app-container" style={{ height: "100vh", width: "100vw", position: "relative" }}>
+                {/* Remove sidebar */}
+                <div className="map-container" style={{ flex: 1, height: "100vh" }}>
                   <MapViewComponent
                     activeCategory={activeCategory}
                     onPlacesFound={handlePlacesFound}
@@ -193,6 +245,55 @@ function App() {
                     apiKey={apiKey}
                   />
                 </div>
+                {/* Floating Chatbot Button */}
+                {!chatbotOpen && (
+                  <button
+                    onClick={() => setChatbotOpen(true)}
+                    style={{
+                      position: "fixed",
+                      bottom: 32,
+                      right: 32,
+                      zIndex: 1001,
+                      borderRadius: "50%",
+                      width: 64,
+                      height: 64,
+                      background: "#1976d2",
+                      color: "#fff",
+                      fontSize: 32,
+                      border: "none",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+                      cursor: "pointer",
+                    }}
+                    aria-label="Open Chatbot"
+                  >
+                    💬
+                  </button>
+                )}
+                {/* Floating Chatbot Panel */}
+                {chatbotOpen && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      bottom: 32,
+                      right: 32,
+                      width: 400,
+                      maxWidth: "90vw",
+                      height: 520,
+                      background: "#fff",
+                      borderRadius: 16,
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+                      zIndex: 1002,
+                      display: "flex",
+                      flexDirection: "column",
+                      overflow: "hidden",
+                      animation: "fadeInUp 0.3s",
+                    }}
+                  >
+                    <div style={{ flex: 1, overflow: "auto" }}>
+                      <Chatbot onExtracted={handleChatbotResult} onClose={() => setChatbotOpen(false)} />
+                    </div>
+                  </div>
+                )}
               </div>
             </ProtectedRoute>
           }
@@ -210,6 +311,15 @@ function App() {
         {/* Any other path redirects to auth */}
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
+      {/* Add fadeInUp animation */}
+      <style>
+        {`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(40px);}
+          to { opacity: 1; transform: translateY(0);}
+        }
+        `}
+      </style>
     </>
   );
 }
