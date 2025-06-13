@@ -392,7 +392,7 @@ const MapViewComponent = ({
             );
 
             const results = response.data;
-        
+
             addSuitabilityMarkers(results);
         } catch (error) {
             console.error("Suitability API call failed:", error);
@@ -405,32 +405,38 @@ const MapViewComponent = ({
         const { Graphic, Point } = esriModules;
         placesLayerRef.current.removeAll(); // Optional: Clear previous
 
-        locations.recommended_locations.forEach(({ lat, lon, score, reason }) => {
-            const point = new Point({ latitude: lat, longitude: lon });
+        locations.recommended_locations.forEach(
+            ({ lat, lon, score, reason }) => {
+                const point = new Point({ latitude: lat, longitude: lon });
 
-            const marker = new Graphic({
-                geometry: point,
-                symbol: {
-                    type: "simple-marker",
-                    style: "circle",
-                    color: [0, 255, 100, 0.8],
-                    size: 12,
-                    outline: {
-                        color: [0, 100, 50],
-                        width: 1,
+                const marker = new Graphic({
+                    geometry: point,
+                    symbol: {
+                        // type: "simple-marker",
+                        // style: "circle",
+                        // color: [0, 255, 100, 0.8],
+                        // size: 12,
+                        // outline: {
+                        //     color: [0, 100, 50],
+                        //     width: 1,
+                        // },
+                        type: "picture-marker",
+                        url: "/recommended-location.svg", // Place your SVG or image in public/images
+                        width: "24px",
+                        height: "24px",
                     },
-                },
-                attributes: {
-                    score: score,
-                },
-                popupTemplate: {
-                    title: "Recommended Location",
-                    content: `Score: ${score}<br>Reason: ${reason}`,
-                },
-            });
+                    attributes: {
+                        score: score,
+                    },
+                    popupTemplate: {
+                        title: "Recommended Location",
+                        content: `Score: ${score}<br>Reason: ${reason}`,
+                    },
+                });
 
-            placesLayerRef.current.add(marker);
-        });
+                placesLayerRef.current.add(marker);
+            }
+        );
 
         if (locations.reference_point) {
             console.log("Adding reference point: ", locations.reference_point);
@@ -439,49 +445,63 @@ const MapViewComponent = ({
                 longitude: locations.reference_point.lon,
             });
 
+            const isNearbyMe = locations.reference_point === undefined; // adjust this key based on your API
+
             const refMarker = new Graphic({
                 geometry: refPoint,
-                symbol: {
-                    type: "simple-marker",
-                    style: "cross",
-                    color: [0, 120, 255], // bright blue
-                    size: 14,
-                    outline: {
-                        color: [0, 80, 200],
-                        width: 4,
-                    },
-                },
+                symbol: isNearbyMe
+                    ? {
+                          type: "picture-marker",
+                          url: "/recommended-location.svg", // your SVG icon
+                          width: "64px",
+                          height: "64px",
+                      }
+                    : {
+                          type: "simple-marker",
+                          style: "cross",
+                          color: [0, 120, 255],
+                          size: 14,
+                          outline: {
+                              color: [0, 80, 200],
+                              width: 4,
+                          },
+                      },
                 attributes: {
                     name: "Reference Point",
                 },
                 popupTemplate: {
                     title: "Reference Point",
-                    content: `Address: ${locations.reference_point.address}`,
+                    content: isNearbyMe
+                        ? `Address: Your current location`
+                        : `Address: ${locations.reference_point.address}`,
                 },
             });
 
             placesLayerRef.current.add(refMarker);
         }
 
-        if (locations.recommended_locations.length > 0 && view && esriModules?.Point) {
-    const { Point } = esriModules;
+        if (
+            locations.recommended_locations.length > 0 &&
+            view &&
+            esriModules?.Point
+        ) {
+            const { Point } = esriModules;
 
-    const targetPoints = locations.recommended_locations.map(
-        ({ lat, lon }) =>
-            new Point({
-                latitude: lat,
-                longitude: lon,
-            })
-    );
+            const targetPoints = locations.recommended_locations.map(
+                ({ lat, lon }) =>
+                    new Point({
+                        latitude: lat,
+                        longitude: lon,
+                    })
+            );
 
-    view.goTo(targetPoints, { zoom: 15 }).catch((error) => {
-        console.error("view.goTo failed:", error);
-    });
-}
+            view.goTo(targetPoints, { zoom: 15 }).catch((error) => {
+                console.error("view.goTo failed:", error);
+            });
+        }
     };
 
     useEffect(() => {
-        
         if (recommendedPlace) {
             addSuitabilityMarkers(recommendedPlace);
         }
@@ -491,7 +511,7 @@ const MapViewComponent = ({
             );
 
             console.log("placeGraphic: ", placeGraphic);
-            
+
             if (placeGraphic) {
                 view.openPopup({
                     location: placeGraphic.geometry,
@@ -501,10 +521,7 @@ const MapViewComponent = ({
 
                 view.goTo(placeGraphic);
             }
-            
-            
         }
-        
     }, [selectedPlaceId, view, recommendedPlace]);
 
     return (

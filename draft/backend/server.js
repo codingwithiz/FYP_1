@@ -63,9 +63,14 @@ app.post("/api/process-places", require("./routes/processPlaces"));
 //suitability
 app.post("/api/suitability", require("./routes/suitability"));
 
+app.get("/api/suitability/:userId", require("./routes/suitability"));
+
 //chatbot
 const chatbotRoute = require("./routes/chatbot");
 app.use(chatbotRoute);
+
+const analysisRoute = require("./routes/analysisRoute");
+app.use(analysisRoute);
 
 //READ
 app.get("/users", async (req, res) => {

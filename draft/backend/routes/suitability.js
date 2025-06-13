@@ -3,10 +3,13 @@ const router = express.Router();
 const arcgis = require("../services/arcgisServices");
 const { scorePlaceByDistance } = require("../services/suitabilityScorer");
 const { generateReasoning } = require("../services/openaiService");
+const referencePointService = require("../services/referencePointService");
+const analysisService = require("../services/analysisService");
+const recommendedLocationService = require("../services/recommendedLocationService");
 
 
 router.post("/api/suitability", async (req, res) => {
-    const { locationName, category, radius, currentLocation, nearbyMe } = req.body;
+    const { locationName, category, radius, currentLocation, nearbyMe, userId, chatId } = req.body;
     const radiusMeters = radius || 1000;
 
     const CATEGORY_MAP = {
@@ -27,14 +30,14 @@ router.post("/api/suitability", async (req, res) => {
                 location: {
                     y: currentLocation.lat,
                     x: currentLocation.lon,
-                }
+                },
+                address: currentLocation.address,
             };
             console.log("Geocoded location using current location:", coord);
         } else {
             coord = await arcgis.geocodeLocation(locationName); // returns { x, y }
             console.log("Geocoded location using location name:", coord);
         }
-        
 
         // Step 2: Get category IDs and nearby places
         const normalizedCategory = normalizeCategory(category);
@@ -98,13 +101,15 @@ router.post("/api/suitability", async (req, res) => {
 
         const best = finalResults.sort((a, b) => b.score - a.score).slice(0, 3);
         const reference_point = {
-            
+            locationName: locationName || "Current Location",
             address: coord.address,
             lat: coord.location.y,
             lon: coord.location.x,
         };
-        
-        const userIntent = `I want to open a ${category} business near ${(locationName ? locationName : "me")}.`;
+
+        const userIntent = `I want to open a ${category} business near ${
+            locationName ? locationName : "me"
+        }.`;
         let enriched = best;
 
         try {
@@ -144,11 +149,32 @@ router.post("/api/suitability", async (req, res) => {
             }));
         }
 
+        // Step 6: Save to DB
+        try {
+            const pointId = await referencePointService.createReferencePoint({
+                name: reference_point.address || reference_point.locationName,
+                lat: reference_point.lat,
+                lon: reference_point.lon,
+            });
+
+            const analysisId = await analysisService.createAnalysis({
+                userId: userId, // Assume userId is available in req.user
+                referencePointId: pointId,
+                chatId: chatId || null,
+            });
+
+            await recommendedLocationService.createRecommendedLocations(
+                enriched,
+                analysisId
+            );
+        } catch (persistErr) {
+            console.error("Error saving analysis results:", persistErr);
+        }
+
         return res.json({
             recommended_locations: enriched,
             reference_point: reference_point,
         });
-
     } catch (err) {
         console.error("Error in suitability route:", err);
         return res

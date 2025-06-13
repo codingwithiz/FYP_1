@@ -72,6 +72,8 @@ function Chatbot({ onExtracted, onClose }) {
           category: botResult.category,
           radius: botResult.radius || 1000,
           nearbyMe: botResult.nearbyMe || false,
+          chatId: selectedChat,
+          userId: userId,
         });
       }
 

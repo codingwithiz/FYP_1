@@ -1,4 +1,4 @@
-/* @import "tailwindcss"; */
+@import "tailwindcss";
 /* #root {
   height: 100vh;
   max-width: 1280px;
@@ -75,7 +75,12 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
+}
+
+.sidebar {
+  overflow-y: auto;
+  height: 100%;
 }
 
 .app-container {
