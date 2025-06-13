@@ -30,6 +30,7 @@ const AuthPage = () => {
       const token = await userCredential.user.getIdToken();
       await axios.post("http://localhost:3001/auth/verify", { token });
       setSuccess(isLogin ? "Login successful!" : "Signup successful!");
+      navigate("/map");
     } catch (err) {
       setError(err.message);
     }

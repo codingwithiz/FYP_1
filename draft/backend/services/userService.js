@@ -3,10 +3,16 @@ const dbConfig = require("../database/dbConfig");
 
 module.exports = {
     createUser: async (user) => {
-        await sql.query`
-      INSERT INTO Users (userId, name, preferenceId) 
-      VALUES (${user.userId}, ${user.name}, ${user.preferenceId})
+        // Check if user exists
+        const result = await sql.query`
+      SELECT * FROM Users WHERE userId = ${user.userId}
     `;
+        if (result.recordset.length === 0) {
+            await sql.query`
+          INSERT INTO Users (userId, name, preferenceId) 
+          VALUES (${user.userId}, ${user.name}, ${user.preferenceId})
+        `;
+        }
     },
 
     getUsers: async () => {
