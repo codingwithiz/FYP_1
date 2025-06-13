@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import { defineCustomElements } from "@esri/calcite-components/dist/loader";
+import Locate from "@arcgis/core/widgets/Locate";
+import MapView from "@arcgis/core/views/MapView";
+import Map from "@arcgis/core/Map";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import { loadModules } from "esri-loader";
 import axios from "axios";
 
@@ -105,9 +109,13 @@ const MapViewComponent = ({
 
                     mapView.when(() => {
                         setView(mapView);
-                        setInitialized(true);
 
-                        // BasemapGallery widget with Expand
+                        const searchWidget = new Search({
+                            view: mapView,
+                            resultGraphicEnabled: true,
+                            popupEnabled: true,
+                        });
+
                         const basemapGallery = new BasemapGallery({
                             view: mapView,
                             source: {
@@ -118,28 +126,9 @@ const MapViewComponent = ({
                             },
                         });
 
-                        const expand = new Expand({
+                        const expandGallery = new Expand({
                             view: mapView,
                             content: basemapGallery,
-                            expanded: false,
-                        });
-
-                        mapView.ui.add(expand, "top-right");
-
-                        basemapGallery.watch("activeBasemap", (newBasemap) => {
-                            if (newBasemap) {
-                                mapView.map.basemap = newBasemap;
-                            }
-                        });
-
-                        const searchWidget = new Search({
-                            view: mapView,
-                            resultGraphicEnabled: true,
-                            popupEnabled: true,
-                        });
-                        mapView.ui.add(searchWidget, {
-                            position: "top-left",
-                            index: 0,
                         });
 
                         const legend = new Legend({
@@ -152,7 +141,35 @@ const MapViewComponent = ({
                             ],
                         });
 
+                        const locateWidget = new Locate({
+                            viewModel: {
+                                // autocasts as new LocateViewModel()
+                                view: view, // assigns the locate widget to a view
+                                graphic: new Graphic({
+                                    symbol: { type: "simple-marker" }, // overwrites the default symbol used for the
+                                    // graphic placed at the location of the user when found
+                                }),
+                            },
+                        });
+
+                        locateWidget.on("locate-error", (err) => {
+                            console.log("Locate error:", err);
+                            alert(
+                                "Could not determine your location. Try again later."
+                            );
+                        });
+
+                        mapView.ui.add(searchWidget, "top-left");
+                        mapView.ui.add(locateWidget, "top-left");
+                        mapView.ui.add(expandGallery, "top-right");
                         mapView.ui.add(legend, "bottom-left");
+
+                        mapView.on("click", (event) => {
+                            setLastClickPoint(event.mapPoint);
+                            clearGraphics();
+                            showPlaces(event.mapPoint);
+                        });
+
                         mapView.on("pointer-move", (event) => {
                             mapView.hitTest(event).then((response) => {
                                 const graphic = response.results.find(
@@ -167,13 +184,6 @@ const MapViewComponent = ({
                                     });
                                 }
                             });
-                        });
-                        // Map click handler
-                        mapView.on("click", (event) => {
-                            console.log("event map point: ", event.mapPoint);
-                            setLastClickPoint(event.mapPoint);
-                            clearGraphics();
-                            showPlaces(event.mapPoint);
                         });
                     });
                 }
@@ -499,12 +509,6 @@ const MapViewComponent = ({
 
     return (
         <>
-            <button
-                onClick={handleSuitabilityRequest}
-                style={{ position: "absolute", zIndex: 10 }}
-            >
-                Run Suitability Analysis
-            </button>
             <div ref={mapRef} style={{ height: "100%", width: "100%" }} />
         </>
     );
