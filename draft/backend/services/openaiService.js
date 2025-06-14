@@ -23,9 +23,10 @@ Your output must be a valid JSON object with the following keys:
    - "sports" (e.g., gym, futsal court, recreation center)
 3. "radius": The search radius in meters. If the user specifies distance (e.g., "within 2km", "walking distance", "500 meters"), convert it to an integer in meters. If no radius is mentioned, default to 1000.
 4. "nearbyMe": A boolean value. Set to true if the user refers to their current location using phrases like "near me", "around me", "dekat saya", "my location", or similar. Otherwise, set to false.
+5. "reason": A short explanation (2-3 sentences) in natural language, summarizing the user's intent and what will be searched.
 
 You must:
-- Return only the JSON object with the four keys.
+- Return only the JSON object with the five keys.
 - Avoid extra text, explanations, or descriptions.
 - Estimate reasonably if details are vague (e.g., interpret "walking distance" as 500 meters).
 - Accept both English and Malay language inputs.
