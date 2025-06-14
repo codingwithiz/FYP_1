@@ -141,28 +141,28 @@ const MapViewComponent = ({
                             ],
                         });
 
-                        const locateWidget = new Locate({
-                            viewModel: {
-                                // autocasts as new LocateViewModel()
-                                view: view, // assigns the locate widget to a view
-                                graphic: new Graphic({
-                                    symbol: { type: "simple-marker" }, // overwrites the default symbol used for the
-                                    // graphic placed at the location of the user when found
-                                }),
-                            },
-                        });
+                        // const locateWidget = new Locate({
+                        //     viewModel: {
+                        //         // autocasts as new LocateViewModel()
+                        //         view: view, // assigns the locate widget to a view
+                        //         graphic: new Graphic({
+                        //             symbol: { type: "simple-marker" }, // overwrites the default symbol used for the
+                        //             // graphic placed at the location of the user when found
+                        //         }),
+                        //     },
+                        // });
 
-                        locateWidget.on("locate-error", (err) => {
-                            console.log("Locate error:", err);
-                            alert(
-                                "Could not determine your location. Try again later."
-                            );
-                        });
+                        // locateWidget.on("locate-error", (err) => {
+                        //     console.log("Locate error:", err);
+                        //     alert(
+                        //         "Could not determine your location. Try again later."
+                        //     );
+                        // });
 
                         mapView.ui.add(searchWidget, "top-left");
-                        mapView.ui.add(locateWidget, "top-left");
+                        // mapView.ui.add(locateWidget, "top-left");
                         mapView.ui.add(expandGallery, "top-right");
-                        mapView.ui.add(legend, "bottom-left");
+                        // mapView.ui.add(legend, "bottom-left");
 
                         mapView.on("click", (event) => {
                             setLastClickPoint(event.mapPoint);
@@ -422,8 +422,8 @@ const MapViewComponent = ({
                         // },
                         type: "picture-marker",
                         url: "/recommended-location.svg", // Place your SVG or image in public/images
-                        width: "24px",
-                        height: "24px",
+                        width: "48px",
+                        height: "48px",
                     },
                     attributes: {
                         score: score,
