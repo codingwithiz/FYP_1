@@ -11,6 +11,7 @@ import "./App.css";
 import api from "./api/api";
 import AnalysesPage from "./components/Analysis";
 
+
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/auth" replace />;
@@ -27,7 +28,7 @@ function App() {
   const navigate = useNavigate();
   const [chatbotOpen, setChatbotOpen] = useState(false);
 
-  const apiKey = import.meta?.env?.VITE_ESRI_API_KEY || "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly";
+  const apiKey = import.meta.env.VITE_ESRI_API_KEY;
 
   const handleLogout = async () => {
     await signOut(auth);

@@ -1,5 +1,4 @@
 const axios = require("axios");
-const ARC_API_KEY = process.env.ARCGIS_API_KEY;
 
 exports.geocodeLocation = async (location) => {
     const url = `https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`;
@@ -7,7 +6,7 @@ exports.geocodeLocation = async (location) => {
         SingleLine: location,
         f: "json",
         outFields: "Match_addr,Addr_type",
-        token: "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly",
+        token: process.env.ARC_API_KEY,
     };
 
     try {
@@ -41,7 +40,7 @@ exports.getCategories = async (category) => {
     const params = {
         filter: category,
         f: "json",
-        token: "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly", // Use your actual token or keep it in .env
+        token: process.env.ARC_API_KEY, // Use your actual token or keep it in .env
     };
 
     try {
@@ -82,7 +81,7 @@ exports.getNearbyPlaces = async (lat, lon, radius, searchText = "hospital", cate
         categoryIds: categoryIds.join(","),
         pageSize: "20",
         f: "json",
-        token: "AAPTxy8BH1VEsoebNVZXo8HurOhukd1E28CYalTpQ2ovQDRMAjTnccKPy00UNDRVFY9ztIq9aC0REycGJGepAJSwmVtTBfKBR7bzv4y4cQxWs8pmVOtqywEIZxJFUzShBJ-gbxFMupHgisPUbDtMh7z_M6hiRlEo-zbHX87ugCtrKsACthqEIwXHN69A1OpyrHBatBXFst8XroSU_-5-VmZ8hMfV_6b1gvWw4ZL7MztKo-U.AT1_uq2IJjly", // Use your actual token or keep it in .env
+        token: process.env.ARC_API_KEY, // Use your actual token or keep it in .env
     };
     console.log("nearby params: ", params)
 
