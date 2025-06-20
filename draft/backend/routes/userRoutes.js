@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const userService = require("../services/userService");
+const sql = require("mssql");
 
 router.post("/", async (req, res) => {
     try {
@@ -33,6 +33,20 @@ router.delete("/:userId", async (req, res) => {
     try {
         await userService.deleteUser(req.params.userId);
         res.send("User deleted");
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// GET user by userId
+router.get("/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const result = await sql.query`SELECT * FROM Users WHERE userId = ${userId}`;
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        res.json(result.recordset[0]);
     } catch (err) {
         res.status(500).send(err.message);
     }

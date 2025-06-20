@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +15,10 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate(); // Add this line
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
+  const navigate = useNavigate();
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -44,9 +48,20 @@ const AuthPage = () => {
       const token = await result.user.getIdToken();
       await axios.post("http://localhost:3001/auth/verify", { token });
       setSuccess("Google login successful!");
-      navigate("/map"); // Redirect to /map after success
+      navigate("/map");
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setResetMsg("");
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      setResetMsg("Password reset email sent! Please check your inbox.");
+    } catch (err) {
+      setResetMsg(err.message);
     }
   };
 
@@ -61,10 +76,10 @@ const AuthPage = () => {
     >
       <div
         style={{
-          width: 400,         // force width
+          width: 400,
           maxWidth: "90vw",
           margin: "100px auto",
-          padding: 40, // more padding
+          padding: 40,
           border: "1px solid #e0e6ed",
           borderRadius: 20,
           background: "#fff",
@@ -109,6 +124,25 @@ const AuthPage = () => {
             onFocus={e => (e.target.style.border = "1.5px solid #1976d2")}
             onBlur={e => (e.target.style.border = "1px solid #cfd8dc")}
           />
+          {isLogin && (
+            <div style={{ textAlign: "right", marginBottom: -10 }}>
+              <button
+                type="button"
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#1976d2",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontSize: 14,
+                  padding: 0,
+                }}
+                onClick={() => setShowForgot(true)}
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
           <button
             type="submit"
             style={{
@@ -182,6 +216,50 @@ const AuthPage = () => {
         {error && <div style={{ color: "#d32f2f", marginTop: 14, textAlign: "center", fontWeight: 500 }}>{error}</div>}
         {success && <div style={{ color: "#388e3c", marginTop: 14, textAlign: "center", fontWeight: 500 }}>{success}</div>}
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+        }}>
+          <div style={{
+            background: "#fff", padding: 24, borderRadius: 12, minWidth: 320, boxShadow: "0 2px 16px rgba(0,0,0,0.15)"
+          }}>
+            <h3>Reset Password</h3>
+            <form onSubmit={handleForgotPassword}>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={resetEmail}
+                onChange={e => setResetEmail(e.target.value)}
+                required
+                style={{ width: "100%", padding: 8, marginBottom: 12, borderRadius: 6, border: "1px solid #ccc" }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: "#1976d2", color: "#fff", border: "none", borderRadius: 6,
+                  padding: "8px 16px", fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                Send Reset Email
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowForgot(false); setResetMsg(""); }}
+                style={{
+                  marginLeft: 12, background: "#eee", color: "#222", border: "none", borderRadius: 6,
+                  padding: "8px 16px", fontWeight: 600, cursor: "pointer"
+                }}
+              >
+                Cancel
+              </button>
+            </form>
+            {resetMsg && <div style={{ marginTop: 12, color: resetMsg.startsWith("Password reset") ? "green" : "red" }}>{resetMsg}</div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
