@@ -6,6 +6,7 @@ const { generateReasoning } = require("../services/openaiService");
 const referencePointService = require("../services/referencePointService");
 const analysisService = require("../services/analysisService");
 const recommendedLocationService = require("../services/recommendedLocationService");
+const conversationService = require("../services/conversationService"); // Add at the top
 
 
 router.post("/api/suitability", async (req, res) => {
@@ -158,7 +159,7 @@ router.post("/api/suitability", async (req, res) => {
             });
 
             const analysisId = await analysisService.createAnalysis({
-                userId: userId, // Assume userId is available in req.user
+                userId: userId,
                 referencePointId: pointId,
                 chatId: chatId || null,
             });
@@ -167,6 +168,11 @@ router.post("/api/suitability", async (req, res) => {
                 enriched,
                 analysisId
             );
+
+            // Update conversation with analysisId
+            if (req.body.conversationId && analysisId) {
+                await conversationService.updateAnalysisId(req.body.conversationId, analysisId);
+            }
         } catch (persistErr) {
             console.error("Error saving analysis results:", persistErr);
         }

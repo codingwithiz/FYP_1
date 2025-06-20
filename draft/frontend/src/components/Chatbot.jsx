@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import api from "../api/api"; // If you have a central api.js, otherwise use axios
 
 const API = "http://localhost:3001";
 
-function Chatbot({ onExtracted, onClose }) {
+function Chatbot({ onExtracted, onClose, onShowRecommendations }) {
   const { user } = useAuth();
   const userId = user?.uid;
 
@@ -58,31 +59,54 @@ function Chatbot({ onExtracted, onClose }) {
     if (!input.trim() || !selectedChat) return;
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/api/chatbot`, { message: input });
-      const botResult = res.data;
+        const res = await axios.post(`${API}/api/chatbot`, { message: input });
+        const botResult = res.data;
 
-      await axios.put(`${API}/chats/${selectedChat}/messages`, {
-        user_prompt: input,
-        bot_answer: JSON.stringify(botResult),
-      });
-
-      if (onExtracted && (botResult.location || botResult.nearbyMe) && botResult.category) {
-        onExtracted({
-          location: botResult.location,
-          category: botResult.category,
-          radius: botResult.radius || 1000,
-          nearbyMe: botResult.nearbyMe || false,
-          chatId: selectedChat,
-          userId: userId,
+        // Save conversation and get conversationId
+        const saveRes = await axios.put(`${API}/chats/${selectedChat}/messages`, {
+            user_prompt: input,
+            bot_answer: JSON.stringify(botResult),
         });
-      }
+        const conversationId = saveRes.data.conversationId;
 
-      fetchConversation(selectedChat);
-      setInput("");
+        if (
+            onExtracted &&
+            (botResult.location || botResult.nearbyMe) &&
+            botResult.category
+        ) {
+            onExtracted({
+                location: botResult.location,
+                category: botResult.category,
+                radius: botResult.radius || 1000,
+                nearbyMe: botResult.nearbyMe || false,
+                chatId: selectedChat,
+                userId: userId,
+                conversationId, // Pass it here!
+            });
+        }
+
+        fetchConversation(selectedChat);
+        setInput("");
     } catch (err) {
-      alert("Something went wrong.");
+        alert("Something went wrong.");
     } finally {
-      setLoading(false);
+        setLoading(false);
+    }
+  };
+
+  // New: Fetch top 3 recommended locations for an analysisId
+  const handleShowRecommendations = async (analysisId) => {
+    if (!analysisId) return;
+    try {
+      // Fetch recommended locations for this analysisId
+      const res = await api.get(`/analysis/${analysisId}/recommendations`);
+      // You need to implement this endpoint in your backend!
+      const locations = res.data.locations || [];
+      if (onShowRecommendations) {
+        onShowRecommendations(locations);
+      }
+    } catch (err) {
+      alert("Failed to fetch recommendations.");
     }
   };
 
@@ -301,7 +325,7 @@ function Chatbot({ onExtracted, onClose }) {
                   </div>
                 </div>
                 {/* Bot message */}
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ display: "flex", justifyContent: "flex-start", flexDirection: "column" }}>
                   <div style={{
                     background: "#f1f1f1",
                     color: "#222",
@@ -322,6 +346,25 @@ function Chatbot({ onExtracted, onClose }) {
                       }
                     })()}
                   </div>
+                  {/* Show Recommendations Button */}
+                  {msg.analysisId && (
+                    <button
+                      style={{
+                        marginTop: 8,
+                        background: "#1976d2",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 4,
+                        padding: "6px 12px",
+                        fontSize: 13,
+                        cursor: "pointer",
+                        alignSelf: "flex-start"
+                      }}
+                      onClick={() => handleShowRecommendations(msg.analysisId)}
+                    >
+                      Show Recommendations on Map
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

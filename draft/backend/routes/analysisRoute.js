@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const sql = require("mssql");
 const {
     getUserAnalysesWithDetails,
     updateAnalysisReferencePoint,
@@ -51,6 +52,22 @@ router.delete("/analysis/:analysisId", async (req, res) => {
     } catch (err) {
         console.error("Failed to delete analysis:", err);
         res.status(500).json({ error: "Failed to delete analysis" });
+    }
+});
+
+// New: Get top 3 recommended locations for an analysisId
+router.get("/analysis/:analysisId/recommendations", async (req, res) => {
+    const { analysisId } = req.params;
+    try {
+        const result = await sql.query`
+            SELECT TOP 3 locationId, lat, lon, score, reason
+            FROM RecommendedLocation
+            WHERE analysisId = ${analysisId}
+            ORDER BY score DESC
+        `;
+        res.json({ locations: result.recordset });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch recommendations" });
     }
 });
 

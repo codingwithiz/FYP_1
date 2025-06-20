@@ -21,6 +21,12 @@ function App() {
   const [places, setPlaces] = useState([]);
   const [activeCategory, setActiveCategory] = useState("4d4b7105d754a06377d81259");
   const [recommendedPlace, setRecommendedPlace] = useState(null);
+
+  // New: Handler for recommendations from Chatbot
+  const handleShowRecommendations = (locations) => {
+    setRecommendedPlace({ recommended_locations: locations });
+  };
+
   const [currentLocationCoordinate, setCurrentLocationCoordinate] =
       useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -49,7 +55,7 @@ function App() {
   };
   
 
-  const handleChatbotResult = async ({ location, category, radius, nearbyMe, chatId, userId }) => {
+  const handleChatbotResult = async ({ location, category, radius, nearbyMe, chatId, userId, conversationId }) => {
     console.log("Chatbot result received:", {
       location,
       category,
@@ -128,7 +134,8 @@ function App() {
         currentLocation: resolvedLocation,
         nearbyMe,
         chatId,
-        userId
+        userId,
+        conversationId, // <-- Pass it here!
       });
   
       const results = res.data || [];
@@ -363,9 +370,8 @@ function App() {
                                       >
                                           <Chatbot
                                               onExtracted={handleChatbotResult}
-                                              onClose={() =>
-                                                  setChatbotOpen(false)
-                                              }
+                                              onClose={() => setChatbotOpen(false)}
+                                              onShowRecommendations={handleShowRecommendations}
                                           />
                                       </div>
                                   </div>
