@@ -12,6 +12,7 @@ router.get("/analysis/:userId", async (req, res) => {
 
     try {
         const analyses = await getUserAnalysesWithDetails(userId);
+        console.log("Fetched analyses for user:", userId, analyses);
         res.status(200).json({ analyses });
     } catch (err) {
         console.error("Failed to fetch user analyses:", err);

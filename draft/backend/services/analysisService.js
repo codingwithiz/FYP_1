@@ -12,8 +12,8 @@ async function createAnalysis({ userId, referencePointId, chatId }) {
             .input("referencePointId", sql.VarChar, referencePointId)
             .input("chatId", sql.VarChar, chatId)
             .query(`
-            INSERT INTO Analysis (analysisId, userId, referencePointId, chatId)
-            VALUES (@analysisId, @userId, @referencePointId, @chatId)
+            INSERT INTO Analysis (analysisId, userId, referencePointId, chatId, created_at)
+            VALUES (@analysisId, @userId, @referencePointId, @chatId, GETDATE())
         `);
     await transaction.commit();
     return analysisId;
@@ -34,6 +34,7 @@ async function getUserAnalysesWithDetails(userId) {
             SELECT 
                 a.analysisId,
                 a.chatId,
+                a.created_at,
                 a.referencePointId,
                 rp.name AS referencePointName,
                 rp.lat AS referencePointLat,
@@ -56,6 +57,7 @@ async function getUserAnalysesWithDetails(userId) {
                 analyses[row.analysisId] = {
                     analysisId: row.analysisId,
                     chatId: row.chatId,
+                    createdAt: row.created_at,
                     referencePoint: {
                         referencePointId: row.referencePointId,
                         name: row.referencePointName,

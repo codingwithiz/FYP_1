@@ -2,20 +2,42 @@ import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
 
-const AnalysesPage = () => {
+const Analysis = () => {
     const { user } = useAuth();
     const userId = user?.uid;
+
     const [analyses, setAnalyses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const [chatIds, setChatIds] = useState([]);
+    const [referenceNames, setReferenceNames] = useState([]);
+    const [selectedChatId, setSelectedChatId] = useState("all");
+    const [selectedRefName, setSelectedRefName] = useState("all");
+
     const [showModal, setShowModal] = useState(false);
     const [selectedAnalysis, setSelectedAnalysis] = useState(null);
     const [formData, setFormData] = useState({ name: "", lat: "", lon: "" });
 
+    const [selectedDate, setSelectedDate] = useState("");
+    const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+
     const fetchAnalyses = async () => {
         try {
             const response = await api.get(`/analysis/${userId}`);
-            setAnalyses(response.data.analyses);
+            const allAnalyses = response.data.analyses;
+
+            setAnalyses(allAnalyses);
+
+            const uniqueChatIds = Array.from(
+                new Set(allAnalyses.map((a) => a.chatId))
+            );
+            const uniqueRefNames = Array.from(
+                new Set(allAnalyses.map((a) => a.referencePoint.name))
+            );
+
+            setChatIds(uniqueChatIds);
+            setReferenceNames(uniqueRefNames);
         } catch (err) {
             console.error(err);
             setError("Failed to fetch analyses.");
@@ -63,9 +85,45 @@ const AnalysesPage = () => {
         }
     };
 
+    const getFilteredAndSortedAnalyses = () => {
+        console.log("Filtering and sorting analyses...", analyses);
+        let filtered = analyses.filter((a) => {
+            const chatMatch =
+                selectedChatId === "all" || a.chatId === selectedChatId;
+            const refMatch =
+                selectedRefName === "all" ||
+                a.referencePoint.name === selectedRefName;
+            const dateMatch =
+                !selectedDate ||
+                new Date(a.createdAt).toLocaleDateString() ===
+                    new Date(selectedDate).toLocaleDateString();
+            return chatMatch && refMatch && dateMatch;
+        });
+
+        return filtered.sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+        });
+    };
+
+    const filteredAnalyses = getFilteredAndSortedAnalyses();
+
     useEffect(() => {
         fetchAnalyses();
     }, []);
+
+    const formatDateTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    };
 
     if (loading)
         return <p className="text-center mt-10 text-black">Loading...</p>;
@@ -77,7 +135,107 @@ const AnalysesPage = () => {
                 Analysis Results
             </h1>
 
-            {analyses.map((analysis) => (
+            {/* Filters container */}
+            <div className="mb-8 p-4 bg-white rounded-lg shadow-md border border-gray-200">
+                <div className="flex flex-wrap gap-6 items-start">
+                    <div className="flex-1 min-w-[200px]">
+                        <label className="block mb-2 text-sm font-semibold text-gray-700">
+                            Filter by Chat ID
+                        </label>
+                        <select
+                            value={selectedChatId}
+                            onChange={(e) => setSelectedChatId(e.target.value)}
+                            className="w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg 
+                                      shadow-sm focus:border-[#1976d2] focus:ring-2 focus:ring-[#1976d2] focus:ring-opacity-30 
+                                      outline-none transition-all duration-200 hover:border-gray-400"
+                        >
+                            <option value="all" className="py-2">All Chats</option>
+                            {chatIds.map((chatId) => (
+                                <option key={chatId} value={chatId} className="py-2">
+                                    {chatId}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex-1 min-w-[200px]">
+                        <label className="block mb-2 text-sm font-semibold text-gray-700">
+                            Filter by Reference Point
+                        </label>
+                        <select
+                            value={selectedRefName}
+                            onChange={(e) => setSelectedRefName(e.target.value)}
+                            className="w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg 
+                                      shadow-sm focus:border-[#1976d2] focus:ring-2 focus:ring-[#1976d2] focus:ring-opacity-30 
+                                      outline-none transition-all duration-200 hover:border-gray-400"
+                        >
+                            <option value="all" className="py-2">All Reference Points</option>
+                            {referenceNames.map((name) => (
+                                <option key={name} value={name} className="py-2">
+                                    {name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex-1 min-w-[200px] relative">
+                        <label className="block mb-2 text-sm font-semibold text-gray-700">
+                            Filter by Date
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg 
+                                          shadow-sm focus:border-[#1976d2] focus:ring-2 focus:ring-[#1976d2] focus:ring-opacity-30 
+                                          outline-none transition-all duration-200 hover:border-gray-400 pr-10"
+                            />
+                            {selectedDate && (
+                                <button
+                                    onClick={() => setSelectedDate("")}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 
+                                              text-gray-400 hover:text-gray-600 transition-colors
+                                              rounded-full hover:bg-gray-100"
+                                    type="button"
+                                    aria-label="Clear date filter"
+                                >
+                                    <svg 
+                                        xmlns="http://www.w3.org/2000/svg" 
+                                        className="h-5 w-5" 
+                                        viewBox="0 0 20 20" 
+                                        fill="currentColor"
+                                    >
+                                        <path 
+                                            fillRule="evenodd" 
+                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
+                                            clipRule="evenodd" 
+                                        />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex-1 min-w-[200px]">
+                        <label className="block mb-2 text-sm font-semibold text-gray-700">
+                            Sort Order
+                        </label>
+                        <select
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value)}
+                            className="w-full px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg 
+                                      shadow-sm focus:border-[#1976d2] focus:ring-2 focus:ring-[#1976d2] focus:ring-opacity-30 
+                                      outline-none transition-all duration-200 hover:border-gray-400"
+                        >
+                            <option value="desc" className="py-2">Newest First</option>
+                            <option value="asc" className="py-2">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {filteredAnalyses.map((analysis) => (
                 <div
                     key={analysis.analysisId}
                     className="mb-10 border-b border-black pb-6"
@@ -96,6 +254,9 @@ const AnalysesPage = () => {
                             </p>
                             <p className="text-sm text-gray-600">
                                 Chat ID: {analysis.chatId}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                Created: {formatDateTime(analysis.createdAt)}
                             </p>
                         </div>
                         <div className="space-x-2">
@@ -137,6 +298,27 @@ const AnalysesPage = () => {
                                 <p className="text-sm mt-2 text-gray-700 italic">
                                     {loc.reason}
                                 </p>
+                                <div className="mt-2 space-x-1">
+                                    <a
+                                        href={`https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lon}#map=19/${loc.lat}/${loc.lon}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 underline text-xs"
+                                    >
+                                        View on OSM
+                                    </a>
+                                    <span className="text-xs text-gray-500">
+                                        |
+                                    </span>
+                                    <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lon}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 underline text-xs"
+                                    >
+                                        Navigate
+                                    </a>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -227,4 +409,5 @@ const AnalysesPage = () => {
     );
 };
 
-export default AnalysesPage;
+export default Analysis;
+//
