@@ -102,8 +102,9 @@ function Chatbot({ onExtracted, onClose, onShowRecommendations }) {
       const res = await api.get(`/analysis/${analysisId}/recommendations`);
       // You need to implement this endpoint in your backend!
       const locations = res.data.locations || [];
+      const referencePoint = res.data.referencePoint || null;
       if (onShowRecommendations) {
-        onShowRecommendations(locations);
+        onShowRecommendations(locations, referencePoint);
       }
     } catch (err) {
       alert("Failed to fetch recommendations.");

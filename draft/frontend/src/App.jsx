@@ -20,11 +20,11 @@ function ProtectedRoute({ children }) {
 function App() {
   const [places, setPlaces] = useState([]);
   const [activeCategory, setActiveCategory] = useState("4d4b7105d754a06377d81259");
-  const [recommendedPlace, setRecommendedPlace] = useState(null);
+    const [recommendedPlace, setRecommendedPlace] = useState(null);
 
   // New: Handler for recommendations from Chatbot
-  const handleShowRecommendations = (locations) => {
-    setRecommendedPlace({ recommended_locations: locations });
+  const handleShowRecommendations = (locations, referencePoint) => {
+    setRecommendedPlace({ recommended_locations: locations, reference_point: referencePoint });
   };
 
   const [currentLocationCoordinate, setCurrentLocationCoordinate] =

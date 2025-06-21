@@ -65,7 +65,15 @@ router.get("/analysis/:analysisId/recommendations", async (req, res) => {
             WHERE analysisId = ${analysisId}
             ORDER BY score DESC
         `;
-        res.json({ locations: result.recordset });
+
+        //get reference point details
+        const refPointResult = await sql.query`
+            SELECT rp.name, rp.lat, rp.lon
+            FROM Analysis a
+            JOIN ReferencePoint rp ON a.referencePointId = rp.pointId
+            WHERE a.analysisId = ${analysisId}
+        `;
+        res.json({ locations: result.recordset, referencePoint: refPointResult.recordset[0] });
     } catch (err) {
         res.status(500).json({ error: "Failed to fetch recommendations" });
     }
